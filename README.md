@@ -2,7 +2,7 @@ Clinic Management Web App:
 
 Features:
 
-- Accounts
+- Accountss
 - Register Patients
 - Search Patients
 - Book / Modify appointments (can be done with drag n drop, or manually filling in date)
