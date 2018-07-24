@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import moment from "moment";
-import DropDown from "../../Util/DropDown";
-import Searchable from "../../Util/Searchable";
+import DropDown from "../../util/DropDown";
+import Searchable from "../../util/Searchable";
 import Diagnosis from "./Diagnosis";
 import Pikaday from "react-pikaday";
 

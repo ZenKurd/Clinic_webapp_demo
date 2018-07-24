@@ -1,14 +1,11 @@
 import React, { Component } from "react";
+
 import { connect } from "react-redux";
-
-import { fetch_data } from "./MainFunctions";
-
 import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
 
-import PatientsContainer from "./Main/Patients";
-import Appointments from "./Main/Appointments";
-
-import axios from "axios";
+import { fetch_data, logout } from "./methods";
+import PatientsContainer from "./containers/Patients";
+import Appointments from "./containers/Calendar";
 
 class App extends Component {
 	constructor(props) {
@@ -28,15 +25,19 @@ class App extends Component {
 				<div id="route_container">
 					<div className="darken" />
 
-					<Link to="/patients" className="route_tab">
+					<Link to="/patients" className="route_tab" id="patient_route_tab">
 						<i className="fa fa-user-md" aria-hidden="true" />
 					</Link>
 
-					<Link to="/appointments" className="route_tab">
+					<Link
+						to="/appointments"
+						className="route_tab"
+						id="calendar_route_tab"
+					>
 						<i className="fa fa-calendar" aria-hidden="true" />
 					</Link>
 
-					<button onClick={() => this.logout()} id="logout">
+					<button onClick={() => logout()} id="logout">
 						Logout
 					</button>
 

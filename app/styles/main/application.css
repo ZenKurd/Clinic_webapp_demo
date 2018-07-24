@@ -23,13 +23,13 @@ body,
 	color: black;
 }
 
-.route_tab:first-child,
+#patient_route_tab,
 #patients_route,
 #patients_profile_route {
 	background: powderblue;
 }
 
-.route_tab:nth-child(2),
+#calendar_route_tab,
 #appointments_route {
 	background: floralwhite;
 }

@@ -1,3 +1,10 @@
+export function new_state(state, payload) {
+	return {
+		...state,
+		...payload
+	};
+}
+
 export function init_calendar_events(patients) {
 	let appointments = [];
 
@@ -12,6 +19,14 @@ export function init_calendar_events(patients) {
 	});
 
 	return appointments;
+}
+
+export function send_post_req(demo) {
+	if (!demo) {
+		axios.post(`/insert`, { data: this.state }).then(res => {
+			console.log("data inserted");
+		});
+	}
 }
 
 /* export function store_in_ls(user_data, lab_data) {

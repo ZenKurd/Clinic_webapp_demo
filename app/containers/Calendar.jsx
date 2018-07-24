@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import BigCalendar from "react-big-calendar";
 import moment from "moment";
-import BookPanel from "../Util/BookPanel";
+import BookPanel from "../components/util/BookPanel";
 import { withRouter } from "react-router-dom";
 import HTML5Backend from "react-dnd-html5-backend";
 import { DragDropContext } from "react-dnd";

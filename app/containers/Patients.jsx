@@ -1,8 +1,11 @@
 import React, { Component } from "react";
-import PatientProfile from "../Patient/PatientProfile";
-import PatientsList from "../Patient/PatientsList";
-import AddPatientPanel from "../Patient/AddPatientPanel";
+import { bindActionCreators } from "redux";
+import PatientProfile from "../components/patient/PatientProfile";
+import PatientsList from "../components/patient/PatientsList";
+import AddPatientPanel from "../components/patient/AddPatientPanel";
 import { connect } from "react-redux";
+import * as PatientsActionCreators from "../components/patient/actions";
+import { darken } from "../methods";
 
 class PatientsContainer extends Component {
 	constructor(props) {
@@ -10,9 +13,14 @@ class PatientsContainer extends Component {
 
 		this.state = {
 			searched_patients: [],
-			no_match: false,
+			search_match: false,
 			show_add_patient_panel: false
 		};
+
+		this.boundActionCreators = bindActionCreators(
+			PatientsActionCreators,
+			this.props.dispatch
+		);
 	}
 
 	render() {
@@ -24,7 +32,6 @@ class PatientsContainer extends Component {
 				add_appointment,
 				add_patient,
 				add_item,
-				darken,
 				diagnosis_list,
 				add_dropdown_item
 			} = this.props;
@@ -33,45 +40,41 @@ class PatientsContainer extends Component {
 			<div className="route_section" id="patients_route">
 				<button
 					id="add_patient_btn"
-					onClick={() => this.show_add_patient_panel()}
+					onClick={() => this.toggle_patient_panel()}
 				>
 					<i className="fa fa-user-plus" aria-hidden="true" />
 				</button>
 
 				{this.state.show_add_patient_panel ? (
 					<AddPatientPanel
-						add_patient={add_patient}
-						close_patient_panel={() => this.close_patient_panel()}
+						add_patient={this.boundActionCreators.add_patient}
+						patients={patients}
+						close_patient_panel={() => this.toggle_patient_panel()}
 					/>
 				) : (
 					""
 				)}
 
-				{this.render_view(this.props, this.state)}
+				{this.render_view(this.props, this.state, this.boundActionCreators)}
 			</div>
 		);
 	}
 
-	render_view(props, state) {
-		if (props.selected_patient) {
-			return props.selected_patient.length > 0 ? (
+	render_view(props, state, boundActionCreators) {
+		const { patients, selected_patient } = props;
+		const { searched_patients } = state;
+
+		if (selected_patient) {
+			return selected_patient.length > 0 ? (
 				<PatientProfile
-					lab_list={props.lab_list}
-					stop_medicine={props.stop_medicine}
-					medicine_dose_list={props.medicine_dose_list}
-					add_dropdown_item={add_dropdown_item}
-					diagnosis_list={diagnosis_list}
-					medicine_list={props.medicine_list}
-					patient={selected_patient}
-					remove_selected_patient={remove_selected_patient}
-					add_appointment={add_appointment}
-					add_item={add_item}
+					actions={boundActionCreators}
+					props={props}
 					darken={darken}
 				/>
 			) : (
 				<PatientsList
-					patients={props.patients}
-					searched_patients={state.searched_patients}
+					patients={patients}
+					searched_patients={searched_patients}
 					render_patients={this.render_patients.bind(this)}
 					search_patient={this.search_patient.bind(this)}
 				/>
@@ -79,14 +82,11 @@ class PatientsContainer extends Component {
 		}
 	}
 
-	close_patient_panel() {
-		this.setState({ show_add_patient_panel: false });
-		this.props.darken();
-	}
-
-	show_add_patient_panel() {
-		this.setState({ show_add_patient_panel: true });
-		this.props.darken();
+	toggle_patient_panel() {
+		this.setState({
+			show_add_patient_panel: !this.state.show_add_patient_panel
+		});
+		darken();
 	}
 
 	search_patient(e) {
@@ -96,7 +96,7 @@ class PatientsContainer extends Component {
 		if (value === "") {
 			return this.setState({
 				searched_patients: [],
-				no_match: false
+				search_match: false
 			});
 		}
 
@@ -111,18 +111,18 @@ class PatientsContainer extends Component {
 			}
 
 			if (searched_patients.length === 0) {
-				return this.setState({ no_match: true });
+				return this.setState({ search_match: true });
 			}
 		}
 
 		return this.setState({
-			no_match: false,
+			search_match: false,
 			searched_patients: searched_patients
 		});
 	}
 
 	render_patients(patients) {
-		if (this.state.no_match === true) {
+		if (this.state.search_match === true) {
 			return;
 		}
 
@@ -132,7 +132,9 @@ class PatientsContainer extends Component {
 					<div
 						key={x}
 						className="patient"
-						onClick={() => this.props.show_patient_profile(patient)}
+						onClick={() =>
+							this.boundActionCreators.show_patient_profile(patient)
+						}
 					>
 						<span>{patient.name}</span>
 						<span>{patient.birth}</span>
@@ -146,17 +148,6 @@ class PatientsContainer extends Component {
 		);
 	}
 }
-
-/* stop_medicine={this.stop_medicine.bind(this)}
-show_patient_profile={this.show_patient_profile.bind(this)}
-remove_selected_patient={this.remove_selected_patient.bind(
-    this
-)}            darken={this.darken}
-
-add_dropdown_item={this.add_dropdown_item.bind(this)}
-add_patient={this.add_patient.bind(this)}
-add_appointment={this.add_appointment.bind(this)}
-add_item={this.add_item.bind(this)} */
 
 const mapStateToProps = state => {
 	const {
