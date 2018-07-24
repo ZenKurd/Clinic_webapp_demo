@@ -6,6 +6,7 @@ import { withRouter } from "react-router-dom";
 import HTML5Backend from "react-dnd-html5-backend";
 import { DragDropContext } from "react-dnd";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
+import { connect } from "react-redux";
 
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
 const DragAndDropCalendar = withDragAndDrop(BigCalendar);
@@ -87,4 +88,16 @@ class Appointments extends Component {
 	}
 }
 
-export default withRouter(Appointments);
+/* move_appointment={this.move_appointment.bind(this)}
+navigate={this.navigate.bind(this)}
+add_appointment={this.add_appointment.bind(this)}
+darken={this.darken.bind(this)} */
+
+const mapStateToProps = state => {
+	return {
+		patients: state.default.patients,
+		events: state.default.events
+	};
+};
+
+export default connect(mapStateToProps)(withRouter(Appointments));

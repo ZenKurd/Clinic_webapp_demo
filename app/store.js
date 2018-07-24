@@ -1,8 +1,8 @@
 import { createStore, applyMiddleware, compose } from "redux";
 import { combineReducers } from "redux";
-import default_reducer from "./reducers";
+import state from "./reducers";
 
-let rootReducer = combineReducers({ default_reducer });
+let rootReducer = combineReducers({ default: state });
 
 const initialState = {};
 const enhancers = [];

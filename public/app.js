@@ -88200,21 +88200,15 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _reactDom = require("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
+var _reactRedux = require("react-redux");
+
 var _MainFunctions = require("./MainFunctions");
 
 var _reactRouterDom = require("react-router-dom");
-
-var _Home = require("./Main/Home");
-
-var _Home2 = _interopRequireDefault(_Home);
 
 var _Patients = require("./Main/Patients");
 
@@ -88227,10 +88221,6 @@ var _Appointments2 = _interopRequireDefault(_Appointments);
 var _axios = require("axios");
 
 var _axios2 = _interopRequireDefault(_axios);
-
-var _config = require("./Util/config");
-
-var _config2 = _interopRequireDefault(_config);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -88246,159 +88236,60 @@ var App = function (_Component) {
 	function App(props) {
 		_classCallCheck(this, App);
 
-		var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
-
-		_this.state = { username: null };
-
-		_this.logout = _MainFunctions.logout.bind(_this);
-		_this.send_post_req = _MainFunctions.send_post_req.bind(_this);
-		_this.darken = _MainFunctions.darken.bind(_this);
-		_this.remove_selected_patient = _MainFunctions.remove_selected_patient.bind(_this);
-		_this.add_item = _MainFunctions.add_item.bind(_this);
-		_this.add_patient = _MainFunctions.add_patient.bind(_this);
-		_this.navigate = _MainFunctions.navigate.bind(_this);
-		_this.move_appointment = _MainFunctions.move_appointment.bind(_this);
-		_this.add_appointment = _MainFunctions.add_appointment.bind(_this);
-		_this.set_appointments = _MainFunctions.set_appointments.bind(_this);
-		_this.add_dropdown_item = _MainFunctions.add_dropdown_item.bind(_this);
-		_this.stop_medicine = _MainFunctions.stop_medicine.bind(_this);
-		_this.show_patient_profile = _MainFunctions.show_patient_profile.bind(_this);
-		return _this;
+		return _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 	}
 
 	_createClass(App, [{
-		key: "init_app_state",
-		value: function init_app_state(data) {
-			var _this2 = this;
-
-			this.setState({
-				username: data[0].username,
-				_id: data[0]._id,
-				email: data[0].email,
-				password: data[0].password,
-				lab_list: data[1],
-				patients: data[0].patients,
-				selected_patient: [],
-				events: [],
-				diagnosis_list: data[0].diagnosis_list,
-				medicine_list: data[0].medicine_list,
-				medicine_dose_list: data[0].medicine_dose_list
-			});
-			setTimeout(function () {
-				return _this2.set_appointments();
-			}, 1000);
-		}
-	}, {
 		key: "componentDidMount",
 		value: function componentDidMount() {
-			var _this3 = this;
+			var dispatch = this.props.dispatch;
 
-			if (window.location.pathname === "/demo") {
-				return _axios2.default.get("/demo_data").then(function (res) {
-					_this3.init_app_state(res.data, "demo");
-				}).catch(function (error) {
-					console.log(error);
-				});
-			} else {
-				return _axios2.default.request({
-					url: "/data",
-					withCredentials: true,
-					headers: {
-						Accept: "application/json",
-						"Content-Type": "application/json",
-						"Access-Control-Allow-Credentials": "true"
-					}
-				}).then(function (res) {
-					_this3.init_app_state(res.data, "data");
-				}).catch(function (error) {
-					console.log(error);
-				});
-			}
+			var mode = window.location.pathname;
+
+			(0, _MainFunctions.fetch_data)(dispatch, mode); //mode can be demo or logged in
 		}
 	}, {
 		key: "render",
 		value: function render() {
-			var _this4 = this;
+			var _this2 = this;
 
 			return _react2.default.createElement(
-				"div",
-				{ id: "content" },
-				_react2.default.createElement("div", { className: "darken" }),
+				_reactRouterDom.BrowserRouter,
+				null,
 				_react2.default.createElement(
-					_reactRouterDom.BrowserRouter,
-					null,
+					"div",
+					{ id: "route_container" },
+					_react2.default.createElement("div", { className: "darken" }),
+					_react2.default.createElement(
+						_reactRouterDom.Link,
+						{ to: "/patients", className: "route_tab" },
+						_react2.default.createElement("i", { className: "fa fa-user-md", "aria-hidden": "true" })
+					),
+					_react2.default.createElement(
+						_reactRouterDom.Link,
+						{ to: "/appointments", className: "route_tab" },
+						_react2.default.createElement("i", { className: "fa fa-calendar", "aria-hidden": "true" })
+					),
+					_react2.default.createElement(
+						"button",
+						{ onClick: function onClick() {
+								return _this2.logout();
+							}, id: "logout" },
+						"Logout"
+					),
 					_react2.default.createElement(
 						"div",
-						{ id: "route_container" },
-						_react2.default.createElement(
-							_reactRouterDom.Link,
-							{ to: "/", className: "route_tab" },
-							_react2.default.createElement("i", { className: "fa fa-home", "aria-hidden": "true" })
-						),
-						_react2.default.createElement(
-							_reactRouterDom.Link,
-							{ to: "/patients", className: "route_tab" },
-							_react2.default.createElement("i", { className: "fa fa-user-md", "aria-hidden": "true" })
-						),
-						_react2.default.createElement(
-							_reactRouterDom.Link,
-							{ to: "/appointments", className: "route_tab" },
-							_react2.default.createElement("i", { className: "fa fa-calendar", "aria-hidden": "true" })
-						),
-						_react2.default.createElement(
-							"button",
-							{ onClick: function onClick() {
-									return _this4.logout();
-								}, id: "logout" },
-							"Logout"
-						),
-						_react2.default.createElement(
-							"div",
-							{ id: "logged_in_info" },
-							"user: ",
-							this.state.username || ""
-						),
-						_react2.default.createElement(
-							_reactRouterDom.Switch,
-							null,
-							_react2.default.createElement(_reactRouterDom.Route, { exact: true, path: "/", component: _Home2.default }),
-							_react2.default.createElement(_reactRouterDom.Route, {
-								path: "/patients",
-								render: function render(props) {
-									return _react2.default.createElement(_Patients2.default, {
-										lab_list: _this4.state.lab_list,
-										stop_medicine: _this4.stop_medicine.bind(_this4),
-										show_patient_profile: _this4.show_patient_profile.bind(_this4),
-										remove_selected_patient: _this4.remove_selected_patient.bind(_this4),
-										add_dropdown_item: _this4.add_dropdown_item.bind(_this4),
-										diagnosis_list: _this4.state.diagnosis_list,
-										medicine_list: _this4.state.medicine_list,
-										medicine_dose_list: _this4.state.medicine_dose_list,
-										patients: _this4.state.patients,
-										add_patient: _this4.add_patient.bind(_this4),
-										add_appointment: _this4.add_appointment.bind(_this4),
-										darken: _this4.darken,
-										add_item: _this4.add_item.bind(_this4),
-										selected_patient: _this4.state.selected_patient
-									});
-								}
-							}),
-							_react2.default.createElement(_reactRouterDom.Route, {
-								path: "/appointments",
-								render: function render(props) {
-									return _react2.default.createElement(_Appointments2.default, {
-										move_appointment: _this4.move_appointment.bind(_this4),
-										navigate: _this4.navigate.bind(_this4),
-										patients: _this4.state.patients,
-										add_appointment: _this4.add_appointment.bind(_this4),
-										events: _this4.state.events,
-										darken: _this4.darken.bind(_this4)
-									});
-								}
-							}),
-							" ",
-							"/>"
-						)
+						{ id: "logged_in_info" },
+						"user: ",
+						this.props.username || ""
+					),
+					_react2.default.createElement(
+						_reactRouterDom.Switch,
+						null,
+						_react2.default.createElement(_reactRouterDom.Route, { exact: true, path: "/", component: _Patients2.default }),
+						_react2.default.createElement(_reactRouterDom.Route, { path: "/patients", component: _Patients2.default }),
+						_react2.default.createElement(_reactRouterDom.Route, { path: "/appointments", component: _Appointments2.default }),
+						"/>"
 					)
 				)
 			);
@@ -88408,7 +88299,12 @@ var App = function (_Component) {
 	return App;
 }(_react.Component);
 
-exports.default = App;
+var mapStateToProps = function mapStateToProps(state) {
+	return {
+		username: state.default.username
+	};
+};
+exports.default = (0, _reactRedux.connect)(mapStateToProps)(App);
 });
 
 require.register("components/Main/Appointments.jsx", function(exports, require, module) {
@@ -88447,6 +88343,8 @@ var _reactDnd = require("react-dnd");
 var _dragAndDrop = require("react-big-calendar/lib/addons/dragAndDrop");
 
 var _dragAndDrop2 = _interopRequireDefault(_dragAndDrop);
+
+var _reactRedux = require("react-redux");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -88557,14 +88455,26 @@ var Appointments = function (_Component) {
 	return Appointments;
 }(_react.Component);
 
-exports.default = (0, _reactRouterDom.withRouter)(Appointments);
+/* move_appointment={this.move_appointment.bind(this)}
+navigate={this.navigate.bind(this)}
+add_appointment={this.add_appointment.bind(this)}
+darken={this.darken.bind(this)} */
+
+var mapStateToProps = function mapStateToProps(state) {
+	return {
+		patients: state.default.patients,
+		events: state.default.events
+	};
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps)((0, _reactRouterDom.withRouter)(Appointments));
 });
 
-require.register("components/Main/Home.jsx", function(exports, require, module) {
+require.register("components/Main/Patients.jsx", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -88573,68 +88483,19 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Home = function (_Component) {
-    _inherits(Home, _Component);
-
-    function Home() {
-        _classCallCheck(this, Home);
-
-        return _possibleConstructorReturn(this, (Home.__proto__ || Object.getPrototypeOf(Home)).apply(this, arguments));
-    }
-
-    _createClass(Home, [{
-        key: "render",
-        value: function render() {
-            return _react2.default.createElement(
-                "div",
-                { className: "route_section", id: "home_route" },
-                _react2.default.createElement(
-                    "h2",
-                    null,
-                    "Demo Clinic Web System"
-                )
-            );
-        }
-    }]);
-
-    return Home;
-}(_react.Component);
-
-exports.default = Home;
-});
-
-require.register("components/Main/Patients.jsx", function(exports, require, module) {
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-var _PatientProfile = require('../Patient/PatientProfile');
+var _PatientProfile = require("../Patient/PatientProfile");
 
 var _PatientProfile2 = _interopRequireDefault(_PatientProfile);
 
-var _PatientsList = require('../Patient/PatientsList');
+var _PatientsList = require("../Patient/PatientsList");
 
 var _PatientsList2 = _interopRequireDefault(_PatientsList);
 
-var _AddPatientPanel = require('../Patient/AddPatientPanel');
+var _AddPatientPanel = require("../Patient/AddPatientPanel");
 
 var _AddPatientPanel2 = _interopRequireDefault(_AddPatientPanel);
+
+var _reactRedux = require("react-redux");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -88645,197 +88506,239 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var PatientsContainer = function (_Component) {
-    _inherits(PatientsContainer, _Component);
+	_inherits(PatientsContainer, _Component);
 
-    function PatientsContainer(props) {
-        _classCallCheck(this, PatientsContainer);
+	function PatientsContainer(props) {
+		_classCallCheck(this, PatientsContainer);
 
-        var _this = _possibleConstructorReturn(this, (PatientsContainer.__proto__ || Object.getPrototypeOf(PatientsContainer)).call(this, props));
+		var _this = _possibleConstructorReturn(this, (PatientsContainer.__proto__ || Object.getPrototypeOf(PatientsContainer)).call(this, props));
 
-        _this.state = {
-            searched_patients: [],
-            no_match: false,
-            show_add_patient_panel: false
-        };
-        return _this;
-    }
+		_this.state = {
+			searched_patients: [],
+			no_match: false,
+			show_add_patient_panel: false
+		};
+		return _this;
+	}
 
-    _createClass(PatientsContainer, [{
-        key: 'render',
-        value: function render() {
-            var _this2 = this;
+	_createClass(PatientsContainer, [{
+		key: "render",
+		value: function render() {
+			var _this2 = this;
 
-            var searched_patients = this.state.searched_patients,
-                _props = this.props,
-                selected_patient = _props.selected_patient,
-                patients = _props.patients,
-                remove_selected_patient = _props.remove_selected_patient,
-                add_appointment = _props.add_appointment,
-                add_patient = _props.add_patient,
-                add_item = _props.add_item,
-                darken = _props.darken,
-                diagnosis_list = _props.diagnosis_list,
-                add_dropdown_item = _props.add_dropdown_item;
+			var searched_patients = this.state.searched_patients,
+			    _props = this.props,
+			    selected_patient = _props.selected_patient,
+			    patients = _props.patients,
+			    remove_selected_patient = _props.remove_selected_patient,
+			    add_appointment = _props.add_appointment,
+			    add_patient = _props.add_patient,
+			    add_item = _props.add_item,
+			    darken = _props.darken,
+			    diagnosis_list = _props.diagnosis_list,
+			    add_dropdown_item = _props.add_dropdown_item;
 
 
-            return _react2.default.createElement(
-                'div',
-                { className: 'route_section', id: 'patients_route' },
-                _react2.default.createElement(
-                    'button',
-                    { id: 'add_patient_btn', onClick: function onClick() {
-                            return _this2.show_add_patient_panel();
-                        } },
-                    _react2.default.createElement('i', { className: 'fa fa-user-plus', 'aria-hidden': 'true' })
-                ),
-                this.state.show_add_patient_panel ? _react2.default.createElement(_AddPatientPanel2.default, {
-                    add_patient: add_patient,
-                    close_patient_panel: function close_patient_panel() {
-                        return _this2.close_patient_panel();
-                    } }) : "",
-                selected_patient.length > 0 ? _react2.default.createElement(_PatientProfile2.default, {
-                    lab_list: this.props.lab_list,
-                    stop_medicine: this.props.stop_medicine,
-                    medicine_dose_list: this.props.medicine_dose_list,
-                    add_dropdown_item: add_dropdown_item,
-                    diagnosis_list: diagnosis_list,
-                    medicine_list: this.props.medicine_list,
-                    patient: selected_patient,
-                    remove_selected_patient: remove_selected_patient,
-                    add_appointment: add_appointment,
-                    add_item: add_item,
-                    darken: darken }) : _react2.default.createElement(_PatientsList2.default, {
-                    patients: patients,
-                    searched_patients: searched_patients,
-                    render_patients: this.render_patients.bind(this),
-                    search_patient: this.search_patient.bind(this)
-                })
-            );
-        }
-    }, {
-        key: 'close_patient_panel',
-        value: function close_patient_panel() {
-            this.setState({ show_add_patient_panel: false });
-            this.props.darken();
-        }
-    }, {
-        key: 'show_add_patient_panel',
-        value: function show_add_patient_panel() {
-            this.setState({ show_add_patient_panel: true });
-            this.props.darken();
-        }
-    }, {
-        key: 'search_patient',
-        value: function search_patient(e) {
-            var value = e.target.value,
-                searched_patients = [];
+			return _react2.default.createElement(
+				"div",
+				{ className: "route_section", id: "patients_route" },
+				_react2.default.createElement(
+					"button",
+					{
+						id: "add_patient_btn",
+						onClick: function onClick() {
+							return _this2.show_add_patient_panel();
+						}
+					},
+					_react2.default.createElement("i", { className: "fa fa-user-plus", "aria-hidden": "true" })
+				),
+				this.state.show_add_patient_panel ? _react2.default.createElement(_AddPatientPanel2.default, {
+					add_patient: add_patient,
+					close_patient_panel: function close_patient_panel() {
+						return _this2.close_patient_panel();
+					}
+				}) : "",
+				this.render_view(this.props, this.state)
+			);
+		}
+	}, {
+		key: "render_view",
+		value: function render_view(props, state) {
+			if (props.selected_patient) {
+				return props.selected_patient.length > 0 ? _react2.default.createElement(_PatientProfile2.default, {
+					lab_list: props.lab_list,
+					stop_medicine: props.stop_medicine,
+					medicine_dose_list: props.medicine_dose_list,
+					add_dropdown_item: add_dropdown_item,
+					diagnosis_list: diagnosis_list,
+					medicine_list: props.medicine_list,
+					patient: selected_patient,
+					remove_selected_patient: remove_selected_patient,
+					add_appointment: add_appointment,
+					add_item: add_item,
+					darken: darken
+				}) : _react2.default.createElement(_PatientsList2.default, {
+					patients: props.patients,
+					searched_patients: state.searched_patients,
+					render_patients: this.render_patients.bind(this),
+					search_patient: this.search_patient.bind(this)
+				});
+			}
+		}
+	}, {
+		key: "close_patient_panel",
+		value: function close_patient_panel() {
+			this.setState({ show_add_patient_panel: false });
+			this.props.darken();
+		}
+	}, {
+		key: "show_add_patient_panel",
+		value: function show_add_patient_panel() {
+			this.setState({ show_add_patient_panel: true });
+			this.props.darken();
+		}
+	}, {
+		key: "search_patient",
+		value: function search_patient(e) {
+			var value = e.target.value,
+			    searched_patients = [];
 
-            if (value === "") {
-                return this.setState({
-                    searched_patients: [],
-                    no_match: false
-                });
-            }
+			if (value === "") {
+				return this.setState({
+					searched_patients: [],
+					no_match: false
+				});
+			}
 
-            if (value.length > 0) {
+			if (value.length > 0) {
+				for (var i = 0; i < this.props.patients.length; i++) {
+					var patient = this.props.patients[i],
+					    patient_name = patient.name.toLowerCase();
 
-                for (var i = 0; i < this.props.patients.length; i++) {
-                    var patient = this.props.patients[i],
-                        patient_name = patient.name.toLowerCase();
+					if (patient_name.startsWith(value)) {
+						searched_patients.push(patient);
+					}
+				}
 
-                    if (patient_name.startsWith(value)) {
-                        searched_patients.push(patient);
-                    }
-                }
+				if (searched_patients.length === 0) {
+					return this.setState({ no_match: true });
+				}
+			}
 
-                if (searched_patients.length === 0) {
-                    return this.setState({ no_match: true });
-                }
-            }
+			return this.setState({
+				no_match: false,
+				searched_patients: searched_patients
+			});
+		}
+	}, {
+		key: "render_patients",
+		value: function render_patients(patients) {
+			var _this3 = this;
 
-            return this.setState({
-                no_match: false,
-                searched_patients: searched_patients
-            });
-        }
-    }, {
-        key: 'render_patients',
-        value: function render_patients(patients) {
-            var _this3 = this;
+			if (this.state.no_match === true) {
+				return;
+			}
 
-            if (this.state.no_match === true) {
-                return;
-            }
+			return _react2.default.createElement(
+				"div",
+				{ className: "patients_list" },
+				patients.map(function (patient, x) {
+					return _react2.default.createElement(
+						"div",
+						{
+							key: x,
+							className: "patient",
+							onClick: function onClick() {
+								return _this3.props.show_patient_profile(patient);
+							}
+						},
+						_react2.default.createElement(
+							"span",
+							null,
+							patient.name
+						),
+						_react2.default.createElement(
+							"span",
+							null,
+							patient.birth
+						),
+						_react2.default.createElement(
+							"span",
+							null,
+							patient.age
+						),
+						_react2.default.createElement(
+							"span",
+							null,
+							patient.gender
+						),
+						_react2.default.createElement(
+							"span",
+							null,
+							patient.address
+						),
+						_react2.default.createElement(
+							"span",
+							null,
+							patient.phone
+						)
+					);
+				})
+			);
+		}
+	}]);
 
-            return _react2.default.createElement(
-                'div',
-                { className: 'patients_list' },
-                patients.map(function (patient, x) {
-                    return _react2.default.createElement(
-                        'div',
-                        { key: x, className: 'patient', onClick: function onClick() {
-                                return _this3.props.show_patient_profile(patient);
-                            } },
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            patient.name
-                        ),
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            patient.birth
-                        ),
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            patient.age
-                        ),
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            patient.gender
-                        ),
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            patient.address
-                        ),
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            patient.phone
-                        )
-                    );
-                })
-            );
-        }
-    }]);
-
-    return PatientsContainer;
+	return PatientsContainer;
 }(_react.Component);
 
-exports.default = PatientsContainer;
+/* stop_medicine={this.stop_medicine.bind(this)}
+show_patient_profile={this.show_patient_profile.bind(this)}
+remove_selected_patient={this.remove_selected_patient.bind(
+    this
+)}            darken={this.darken}
+
+add_dropdown_item={this.add_dropdown_item.bind(this)}
+add_patient={this.add_patient.bind(this)}
+add_appointment={this.add_appointment.bind(this)}
+add_item={this.add_item.bind(this)} */
+
+var mapStateToProps = function mapStateToProps(state) {
+	var _state$default = state.default,
+	    lab_list = _state$default.lab_list,
+	    diagnosis_list = _state$default.diagnosis_list,
+	    medicine_list = _state$default.medicine_list,
+	    medicine_dose_list = _state$default.medicine_dose_list,
+	    patients = _state$default.patients,
+	    selected_patient = _state$default.selected_patient;
+
+	return {
+		lab_list: lab_list,
+		diagnosis_list: diagnosis_list,
+		medicine_list: medicine_list,
+		medicine_dose_list: medicine_dose_list,
+		patients: patients,
+		selected_patient: selected_patient
+	};
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps)(PatientsContainer);
 });
 
-;require.register("components/MainFunctions.js", function(exports, require, module) {
-'use strict';
+require.register("components/MainFunctions.js", function(exports, require, module) {
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true
 });
-exports.logout = exports.send_post_req = exports.show_patient_profile = exports.stop_medicine = exports.add_dropdown_item = exports.set_appointments = exports.add_appointment = exports.move_appointment = exports.navigate = exports.add_item = exports.add_patient = exports.darken = exports.remove_selected_patient = undefined;
+exports.logout = exports.send_post_req = exports.show_patient_profile = exports.stop_medicine = exports.add_dropdown_item = exports.init_calendar_events_state = exports.add_appointment = exports.move_appointment = exports.navigate = exports.add_item = exports.add_patient = exports.darken = exports.remove_selected_patient = exports.fetch_data = undefined;
 
-var _axios = require('axios');
+var _axios = require("axios");
 
 var _axios2 = _interopRequireDefault(_axios);
 
-var _config = require('./Util/config');
-
-var _config2 = _interopRequireDefault(_config);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+exports.fetch_data = fetch_data;
 exports.remove_selected_patient = remove_selected_patient;
 exports.darken = darken;
 exports.add_patient = add_patient;
@@ -88843,7 +88746,7 @@ exports.add_item = add_item;
 exports.navigate = navigate;
 exports.move_appointment = move_appointment;
 exports.add_appointment = add_appointment;
-exports.set_appointments = set_appointments;
+exports.init_calendar_events_state = init_calendar_events_state;
 exports.add_dropdown_item = add_dropdown_item;
 exports.stop_medicine = stop_medicine;
 exports.show_patient_profile = show_patient_profile;
@@ -88851,277 +88754,286 @@ exports.send_post_req = send_post_req;
 exports.logout = logout;
 
 
+function fetch_data(dispatch, mode) {
+	return _axios2.default.get("/data", {
+		params: {
+			mode: mode
+		}
+	}).then(function (res) {
+		dispatch({
+			type: "INIT_STATE",
+			payload: res.data
+		});
+	});
+}
+
 function send_post_req() {
-    if (this.state.username) {
-        _axios2.default.post('/insert', {
-            withCredentials: true,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Origin": "http://ec2-34-212-25-151.us-west-2.compute.amazonaws.com:3000",
-                "Access-Control-Allow-Credentials": "true"
-            }
-        }, { data: this.state }).then(function (res) {
-            console.log("data inserted");
-        }).catch(function (error) {
-            console.log(error);
-        });
-    }
+	if (this.state.username) {
+		_axios2.default.post("/insert", {
+			withCredentials: true,
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "http://ec2-34-212-25-151.us-west-2.compute.amazonaws.com:3000",
+				"Access-Control-Allow-Credentials": "true"
+			}
+		}, { data: this.state }).then(function (res) {
+			console.log("data inserted");
+		}).catch(function (error) {
+			console.log(error);
+		});
+	}
 }
 
 function logout() {
-    if (this.state.username) {
-        _axios2.default.get('/logout', {
-            withCredentials: true,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Origin": "http://ec2-34-212-25-151.us-west-2.compute.amazonaws.com:3000",
-                "Access-Control-Allow-Credentials": "true"
-            }
-        }).then(function (res) {
-            window.location = "/";
-        }).catch(function (error) {
-            console.log(error);
-        });
-    }
+	if (this.state.username) {
+		_axios2.default.get("/logout", {
+			withCredentials: true,
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "http://ec2-34-212-25-151.us-west-2.compute.amazonaws.com:3000",
+				"Access-Control-Allow-Credentials": "true"
+			}
+		}).then(function (res) {
+			window.location = "/";
+		}).catch(function (error) {
+			console.log(error);
+		});
+	}
 }
 
 function remove_selected_patient() {
-    this.setState({ selected_patient: [] });
+	this.setState({ selected_patient: [] });
 }
 
 function darken() {
-    var darken_div = document.querySelector(".darken");
-    darken_div.classList.toggle("darken_show");
+	var darken_div = document.querySelector(".darken");
+	darken_div.classList.toggle("darken_show");
 }
 
 function add_patient(patient) {
-    var _this = this;
+	var _this = this;
 
-    if (patient.name && patient.date && patient.gender && patient.address) {
+	if (patient.name && patient.date && patient.gender && patient.address) {
+		var updated_patients = this.state.patients.slice(),
+		    birth = patient.date.split("-"),
+		    reversed_birth = birth.reverse().join("-"),
+		    date1 = new Date(),
+		    date2 = new Date(patient.date),
+		    time_diff = Math.abs(date2.getTime() - date1.getTime()),
+		    diff_years = Math.ceil(time_diff / (1000 * 3600 * 24) / 365),
+		    new_patient = {
+			name: patient.name,
+			birth: reversed_birth,
+			gender: patient.gender,
+			id: Math.floor(Math.random() * (999999 - 100000)) + 100000,
+			age: diff_years,
+			gravida: patient.gravida,
+			hypertension: patient.hypertension,
+			diabetes: patient.diabetes,
+			phone: patient.phone,
+			smoker: patient.smoker,
+			address: patient.address,
+			notes: [],
+			lab: [],
+			appointments: [],
+			vitals: [],
+			medicine: [],
+			diagnosis: []
+		};
 
-        var updated_patients = this.state.patients.slice(),
-            birth = patient.date.split("-"),
-            reversed_birth = birth.reverse().join("-"),
-            date1 = new Date(),
-            date2 = new Date(patient.date),
-            time_diff = Math.abs(date2.getTime() - date1.getTime()),
-            diff_years = Math.ceil(time_diff / (1000 * 3600 * 24) / 365),
-            new_patient = {
-            name: patient.name,
-            birth: reversed_birth,
-            gender: patient.gender,
-            id: Math.floor(Math.random() * (999999 - 100000)) + 100000,
-            age: diff_years,
-            gravida: patient.gravida,
-            hypertension: patient.hypertension,
-            diabetes: patient.diabetes,
-            phone: patient.phone,
-            smoker: patient.smoker,
-            address: patient.address,
-            notes: [],
-            lab: [],
-            appointments: [],
-            vitals: [],
-            "medicine": [],
-            "diagnosis": []
-        };
+		updated_patients.unshift(new_patient);
 
-        updated_patients.unshift(new_patient);
-
-        this.setState({ patients: updated_patients });
-        setTimeout(function () {
-            return _this.send_post_req();
-        }, 2000);
-    }
+		this.setState({ patients: updated_patients });
+		setTimeout(function () {
+			return _this.send_post_req();
+		}, 2000);
+	}
 }
 
 function add_item(item, patient, property) {
-    var _this2 = this;
+	var _this2 = this;
 
-    var patients = this.state.patients.slice();
+	var patients = this.state.patients.slice();
 
-    for (var i = 0; i < patients.length; i++) {
-        if (patients[i].name === patient.name) {
-            patients[i][property].unshift(item);
-        }
-    }
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === patient.name) {
+			patients[i][property].unshift(item);
+		}
+	}
 
-    this.setState({ patients: patients });
+	this.setState({ patients: patients });
 
-    setTimeout(function () {
-        return _this2.send_post_req();
-    }, 2000);
+	setTimeout(function () {
+		return _this2.send_post_req();
+	}, 2000);
 }
 
 function navigate(patient) {
-    var selected_patient = void 0,
-        patients = this.state.patients;
+	var selected_patient = void 0,
+	    patients = this.state.patients;
 
-    for (var i = 0; i < patients.length; i++) {
-        if (patients[i].name === patient) {
-            selected_patient = patients[i];
-        }
-    }
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === patient) {
+			selected_patient = patients[i];
+		}
+	}
 
-    this.setState({ selected_patient: [selected_patient] });
+	this.setState({ selected_patient: [selected_patient] });
 }
 
 function move_appointment(event, start, end) {
-    var _this3 = this;
+	var _this3 = this;
 
-    var patients = this.state.patients.slice(),
-        appointments = [],
-        patient_index = void 0,
-        appointment_index = void 0,
-        appointment = {
-        "title": event.title,
-        "start": start,
-        "end": end,
-        "desc": event.desc
-    };
+	var patients = this.state.patients.slice(),
+	    appointments = [],
+	    patient_index = void 0,
+	    appointment_index = void 0,
+	    appointment = {
+		title: event.title,
+		start: start,
+		end: end,
+		desc: event.desc
+	};
 
-    for (var i = 0; i < patients.length; i++) {
-        if (patients[i].name === event.title) {
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === event.title) {
+			for (var j = 0; j < patients[i].appointments.length; j++) {
+				if (patients[i].appointments[j].start === event.start) {
+					patient_index = i;
+					appointment_index = j;
+					patients[i].appointments.push(appointment);
+					break;
+				}
+			}
+		}
+	}
 
-            for (var j = 0; j < patients[i].appointments.length; j++) {
-                if (patients[i].appointments[j].start === event.start) {
+	if (typeof patient_index === "number") {
+		patients[patient_index].appointments.splice(appointment_index, 1);
+	}
 
-                    patient_index = i;
-                    appointment_index = j;
-                    patients[i].appointments.push(appointment);
-                    break;
-                }
-            }
-        }
-    }
+	patients.map(function (patient) {
+		patient.appointments.map(function (apt) {
+			appointments.push(apt);
+		});
+	});
 
-    if (typeof patient_index === "number") {
-        patients[patient_index].appointments.splice(appointment_index, 1);
-    }
+	this.setState({
+		patients: patients,
+		events: appointments
+	});
 
-    patients.map(function (patient) {
-        patient.appointments.map(function (apt) {
-            appointments.push(apt);
-        });
-    });
-
-    this.setState({
-        patients: patients,
-        events: appointments
-    });
-
-    setTimeout(function () {
-        return _this3.send_post_req();
-    }, 2000);
+	setTimeout(function () {
+		return _this3.send_post_req();
+	}, 2000);
 }
 
 function add_appointment(appointment, patient) {
-    var _this4 = this;
+	var _this4 = this;
 
-    var patients = this.state.patients.slice(),
-        selected_patient = void 0,
-        appointments = [];
+	var patients = this.state.patients.slice(),
+	    selected_patient = void 0,
+	    appointments = [];
 
-    for (var i = 0; i < patients.length; i++) {
-        if (patients[i].name === patient) {
-            selected_patient = patients[i];
-            patients[i].appointments.unshift(appointment);
-        }
-    }
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === patient) {
+			selected_patient = patients[i];
+			patients[i].appointments.unshift(appointment);
+		}
+	}
 
-    this.state.patients.map(function (patient) {
-        patient.appointments.map(function (apt) {
-            appointments.push(apt);
-        });
-    });
+	this.state.patients.map(function (patient) {
+		patient.appointments.map(function (apt) {
+			appointments.push(apt);
+		});
+	});
 
-    this.setState({
-        patients: patients,
-        events: appointments,
-        selected_patient: [selected_patient]
-    });
+	this.setState({
+		patients: patients,
+		events: appointments,
+		selected_patient: [selected_patient]
+	});
 
-    setTimeout(function () {
-        return _this4.send_post_req();
-    }, 2000);
+	setTimeout(function () {
+		return _this4.send_post_req();
+	}, 2000);
 }
 
-function set_appointments() {
-    var _this5 = this;
+function init_calendar_events_state() {
+	var _this5 = this;
 
-    var appointments = [];
+	var appointments = [];
 
-    this.state.patients.map(function (patient) {
-        patient.appointments.map(function (apt) {
-            appointments.push({
-                title: apt.title,
-                start: new Date(apt.start),
-                end: new Date(apt.end)
-            });
-        });
-    });
+	this.state.patients.map(function (patient) {
+		patient.appointments.map(function (apt) {
+			appointments.push({
+				title: apt.title,
+				start: new Date(apt.start),
+				end: new Date(apt.end)
+			});
+		});
+	});
 
-    this.setState({ events: appointments });
+	this.setState({ events: appointments });
 
-    setTimeout(function () {
-        return _this5.send_post_req();
-    }, 1000);
+	setTimeout(function () {
+		return _this5.send_post_req();
+	}, 1000);
 }
 
 function add_dropdown_item(item, category) {
-    var _this6 = this;
+	var _this6 = this;
 
-    var new_items = this.state[category].slice();
-    new_items.push(item);
+	var new_items = this.state[category].slice();
+	new_items.push(item);
 
-    if (category === "diagnosis_list") {
-        this.setState({ diagnosis_list: new_items });
-    }
-    if (category === "medicine_list") {
-        this.setState({ medicine_list: new_items });
-    }
+	if (category === "diagnosis_list") {
+		this.setState({ diagnosis_list: new_items });
+	}
+	if (category === "medicine_list") {
+		this.setState({ medicine_list: new_items });
+	}
 
-    if (category === "medicine_dose_list") {
-        this.setState({ medicine_dose_list: new_items });
-    }
+	if (category === "medicine_dose_list") {
+		this.setState({ medicine_dose_list: new_items });
+	}
 
-    setTimeout(function () {
-        return _this6.send_post_req();
-    }, 2000);
+	setTimeout(function () {
+		return _this6.send_post_req();
+	}, 2000);
 }
 
 function stop_medicine(patient, medicine) {
-    var _this7 = this;
+	var _this7 = this;
 
-    var patients = this.state.patients.slice();
+	var patients = this.state.patients.slice();
 
-    for (var i = 0; i < patients.length; i++) {
-        if (patients[i].name === patient.name) {
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === patient.name) {
+			for (var j = 0; j < patients[i].medicine.length; j++) {
+				if (patients[i].medicine[j] === medicine) {
+					patients[i].medicine[j]["stopped"] = "stopped";
+					break;
+				}
+			}
+		}
+	}
 
-            for (var j = 0; j < patients[i].medicine.length; j++) {
-                if (patients[i].medicine[j] === medicine) {
-                    patients[i].medicine[j]["stopped"] = "stopped";
-                    break;
-                }
-            }
-        }
-    }
+	this.setState({ patients: patients });
 
-    this.setState({ patients: patients });
-
-    setTimeout(function () {
-        return _this7.send_post_req();
-    }, 2000);
+	setTimeout(function () {
+		return _this7.send_post_req();
+	}, 2000);
 }
 
 function show_patient_profile(patient) {
-    this.setState({ selected_patient: [patient] });
+	this.setState({ selected_patient: [patient] });
 }
 
 function remove_selected_patient() {
-    this.setState({ selected_patient: [] });
+	this.setState({ selected_patient: [] });
 }
 });
 
@@ -91713,17 +91625,7 @@ var Searchable = function (_Component) {
 exports.default = Searchable;
 });
 
-require.register("components/Util/config.js", function(exports, require, module) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var ip_address = window.ip_address ? window.ip_address : "localhost";
-exports.default = ip_address;
-});
-
-;require.register("initialize.js", function(exports, require, module) {
+require.register("initialize.js", function(exports, require, module) {
 "use strict";
 
 var _react = require("react");
@@ -91755,24 +91657,42 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 });
 
-require.register("reducers.js", function(exports, require, module) {
+require.register("reducers/index.js", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-var init_state = {
-	hi: null
-};
+
+var _util = require("./util.js");
+
+var init_state = {};
 
 exports.default = function () {
 	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : init_state;
 	var action = arguments[1];
 
 	switch (action.type) {
-		case "SENT_DOCUMENTS":
+		case "INIT_STATE":
 			{
-				return Object.assign({}, state, {});
+				var _action$payload = action.payload,
+				    data = _action$payload.data,
+				    lab_data = _action$payload.lab_data;
+
+
+				return Object.assign({}, state, {
+					username: data.username,
+					_id: data._id,
+					email: data.email,
+					password: data.password,
+					lab_list: lab_data,
+					patients: data.patients,
+					selected_patient: [],
+					diagnosis_list: data.diagnosis_list,
+					medicine_list: data.medicine_list,
+					medicine_dose_list: data.medicine_dose_list,
+					events: (0, _util.init_calendar_events)(data.patients)
+				});
 			}
 
 		default:
@@ -91781,7 +91701,40 @@ exports.default = function () {
 };
 });
 
-require.register("store.js", function(exports, require, module) {
+require.register("reducers/util.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.init_calendar_events = init_calendar_events;
+function init_calendar_events(patients) {
+	var appointments = [];
+
+	patients.map(function (patient) {
+		patient.appointments.map(function (apt) {
+			appointments.push({
+				title: apt.title,
+				start: new Date(apt.start),
+				end: new Date(apt.end)
+			});
+		});
+	});
+
+	return appointments;
+}
+
+/* export function store_in_ls(user_data, lab_data) {
+	let key;
+	if (user_data.username == "demo_user") key = "demo_";
+
+	localStorage.setItem(key + "user_data", JSON.stringify(user_data));
+	localStorage.setItem(key + "lab_data", JSON.stringify(lab_data));
+}
+ */
+});
+
+;require.register("store.js", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -91796,7 +91749,7 @@ var _reducers2 = _interopRequireDefault(_reducers);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var rootReducer = (0, _redux.combineReducers)({ default_reducer: _reducers2.default });
+var rootReducer = (0, _redux.combineReducers)({ default: _reducers2.default });
 
 var initialState = {};
 var enhancers = [];

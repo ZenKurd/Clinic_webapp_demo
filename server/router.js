@@ -1,8 +1,9 @@
 const router = require("express").Router(),
 	User = require("./user"),
 	path = require("path"),
-	lab = require("./lab_data"),
-	data = require("./demo_data");
+	lab_data = require("./lab_data"),
+	demo_data = require("./demo_data"),
+	url = require("url");
 
 router.get("/", (req, res) => {
 	if (req.session.userId) {
@@ -12,8 +13,21 @@ router.get("/", (req, res) => {
 });
 
 router.get("/data", (req, res) => {
+	const parsed_url = url.parse(req.url, true);
+	const query = parsed_url.query;
+
+	if (query.mode == "/demo") {
+		return res.send({
+			data: demo_data,
+			lab_data
+		});
+	}
+
 	User.findById(req.session.userId, (error, user) => {
-		res.send([user, lab]);
+		res.send({
+			data: user,
+			lab_data
+		});
 	});
 });
 
@@ -23,10 +37,6 @@ router.get(["/patients", "/appointments"], (req, res) => {
 
 router.get("/demo", (req, res) => {
 	res.sendFile(path.join(__dirname + "/../public/index.html"));
-});
-
-router.get("/demo_data", (req, res) => {
-	res.send([data, lab]);
 });
 
 router.post("/insert", (req, res) => {
