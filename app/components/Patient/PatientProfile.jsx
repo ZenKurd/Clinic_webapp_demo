@@ -182,7 +182,11 @@ export default class PatientsList extends Component {
 
 			treatment.value = "";
 			this.setState({ selected_diagnosis_option: "" });
-			this.props.add_item(diagnosis_bj, this.props.patient[0], "diagnosis");
+			this.props.actions.add_item(
+				diagnosis_bj,
+				this.props.props.selected_patient,
+				"diagnosis"
+			);
 		}
 	}
 }

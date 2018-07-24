@@ -36,8 +36,6 @@ export function update_patients(state, updated_patient) {
 		})
 		.indexOf(updated_patient.id);
 
-	console.log(patient_index);
-
 	let updated_patients = state.patients.slice();
 	update_patients[patient_index] = updated_patient;
 

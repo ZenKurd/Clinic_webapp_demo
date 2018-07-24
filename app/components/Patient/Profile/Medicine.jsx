@@ -162,12 +162,15 @@ class Medicine extends Component {
 			end_date &&
 			selected_medicine_option !== "medicine"
 		) {
+			let medicine_active = moment(end_date) > moment() ? true : false;
+
 			let medicine = {
 				start: moment(start_date).format("YYYY-MM-DD"),
 				end: moment(end_date).format("YYYY-MM-DD"),
 				name: selected_medicine_option,
 				dose: selected_medicine_dose_option,
-				strength: selected_medicine_option.match(/\-\s(\w+[\.\d+\w+\s]*)$/)[1]
+				strength: selected_medicine_option.match(/\-\s(\w+[\.\d+\w+\s]*)$/)[1],
+				active: medicine_active
 			};
 
 			let input = document.querySelector("#search_item_input");
