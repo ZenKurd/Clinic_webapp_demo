@@ -29,17 +29,22 @@ export function send_post_req(demo) {
 	}
 }
 
-export function update_patients(patients, updated_patient) {
-	var patient_index = patients
+export function update_patients(state, updated_patient) {
+	var patient_index = state.patients
 		.map(x => {
 			return x.id;
 		})
 		.indexOf(updated_patient.id);
 
-	let updated_patients = patients.slice();
+	console.log(patient_index);
+
+	let updated_patients = state.patients.slice();
 	update_patients[patient_index] = updated_patient;
 
-	return updated_patients;
+	return {
+		...state,
+		patients: updated_patients
+	};
 }
 
 /* export function store_in_ls(user_data, lab_data) {

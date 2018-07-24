@@ -93,7 +93,10 @@ export function stop_medicine(patient, medicine) {
 }
 
 export function remove_selected_patient() {
-	this.setState({ selected_patient: null });
+	return {
+		type: "SELECTED_PATIENT",
+		payload: { selected_patient: null }
+	};
 }
 
 export function show_patient_profile(patient) {
@@ -104,15 +107,10 @@ export function show_patient_profile(patient) {
 }
 
 export function add_item(item, patient, property) {
-	let patients = this.state.patients.slice();
+	let updated_patient = patient[property].unshift(item);
 
-	for (let i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient.name) {
-			patients[i][property].unshift(item);
-		}
-	}
-
-	this.setState({ patients: patients });
-
-	setTimeout(() => this.send_post_req(), 2000);
+	return {
+		type: "ADD_ITEM",
+		payload: { updated_patient: updated_patient }
+	};
 }

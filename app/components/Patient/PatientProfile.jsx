@@ -76,6 +76,7 @@ export default class PatientsList extends Component {
 	}
 
 	remove_selected_patient() {
+		this.props.clear_searched_patients();
 		this.props.actions.remove_selected_patient();
 	}
 
@@ -98,12 +99,9 @@ export default class PatientsList extends Component {
 			add_dropdown_item,
 			stop_medicine
 		} = props.actions;
-		const { darken } = props.darken;
 
 		if (this.state.active_tab === "notes") {
-			return (
-				<Notes patient={selected_patient} add_note={add_item} darken={darken} />
-			);
+			return <Notes patient={selected_patient} add_note={add_item} />;
 		}
 
 		if (this.state.active_tab === "vitals") {
@@ -115,7 +113,6 @@ export default class PatientsList extends Component {
 				<Lab
 					add_lab_item={add_item}
 					lab_list={lab_list}
-					darken={darken}
 					patient={selected_patient}
 				/>
 			);

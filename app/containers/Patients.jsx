@@ -67,6 +67,7 @@ class PatientsContainer extends Component {
 		return selected_patient ? (
 			<PatientProfile
 				actions={boundActionCreators}
+				clear_searched_patients={this.clear_searched_patients.bind(this)}
 				props={props}
 				darken={darken}
 			/>
@@ -85,6 +86,13 @@ class PatientsContainer extends Component {
 			show_add_patient_panel: !this.state.show_add_patient_panel
 		});
 		darken();
+	}
+
+	clear_searched_patients() {
+		return this.setState({
+			searched_patients: [],
+			search_match: false
+		});
 	}
 
 	search_patient(e) {

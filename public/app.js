@@ -87252,6 +87252,7 @@ var PatientsList = function (_Component) {
 	}, {
 		key: "remove_selected_patient",
 		value: function remove_selected_patient() {
+			this.props.clear_searched_patients();
 			this.props.actions.remove_selected_patient();
 		}
 	}, {
@@ -87273,11 +87274,10 @@ var PatientsList = function (_Component) {
 			    add_appointment = _props$actions.add_appointment,
 			    add_dropdown_item = _props$actions.add_dropdown_item,
 			    stop_medicine = _props$actions.stop_medicine;
-			var darken = props.darken.darken;
 
 
 			if (this.state.active_tab === "notes") {
-				return _react2.default.createElement(_profile.Notes, { patient: selected_patient, add_note: add_item, darken: darken });
+				return _react2.default.createElement(_profile.Notes, { patient: selected_patient, add_note: add_item });
 			}
 
 			if (this.state.active_tab === "vitals") {
@@ -87288,7 +87288,6 @@ var PatientsList = function (_Component) {
 				return _react2.default.createElement(_profile.Lab, {
 					add_lab_item: add_item,
 					lab_list: lab_list,
-					darken: darken,
 					patient: selected_patient
 				});
 			}
@@ -87569,7 +87568,10 @@ function stop_medicine(patient, medicine) {
 }
 
 function remove_selected_patient() {
-	this.setState({ selected_patient: null });
+	return {
+		type: "SELECTED_PATIENT",
+		payload: { selected_patient: null }
+	};
 }
 
 function show_patient_profile(patient) {
@@ -87580,21 +87582,12 @@ function show_patient_profile(patient) {
 }
 
 function add_item(item, patient, property) {
-	var _this3 = this;
+	var updated_patient = patient[property].unshift(item);
 
-	var patients = this.state.patients.slice();
-
-	for (var i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient.name) {
-			patients[i][property].unshift(item);
-		}
-	}
-
-	this.setState({ patients: patients });
-
-	setTimeout(function () {
-		return _this3.send_post_req();
-	}, 2000);
+	return {
+		type: "ADD_ITEM",
+		payload: { updated_patient: updated_patient }
+	};
 }
 });
 
@@ -88954,29 +88947,31 @@ exports.default = Medicine;
 });
 
 require.register("components/patient/profile/Notes.jsx", function(exports, require, module) {
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _AddNote = require('./AddNote');
+var _AddNote = require("./AddNote");
 
 var _AddNote2 = _interopRequireDefault(_AddNote);
 
-var _moment = require('moment');
+var _moment = require("moment");
 
 var _moment2 = _interopRequireDefault(_moment);
 
-var _reactHtmlParser = require('react-html-parser');
+var _reactHtmlParser = require("react-html-parser");
 
 var _reactHtmlParser2 = _interopRequireDefault(_reactHtmlParser);
+
+var _methods = require("../../../methods");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -88987,126 +88982,135 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Notes = function (_Component) {
-    _inherits(Notes, _Component);
+	_inherits(Notes, _Component);
 
-    function Notes(props) {
-        _classCallCheck(this, Notes);
+	function Notes(props) {
+		_classCallCheck(this, Notes);
 
-        var _this = _possibleConstructorReturn(this, (Notes.__proto__ || Object.getPrototypeOf(Notes)).call(this, props));
+		var _this = _possibleConstructorReturn(this, (Notes.__proto__ || Object.getPrototypeOf(Notes)).call(this, props));
 
-        _this.state = {
-            show_create_notes_panel: false
-        };
-        return _this;
-    }
+		_this.state = {
+			show_create_notes_panel: false
+		};
+		return _this;
+	}
 
-    _createClass(Notes, [{
-        key: 'render',
-        value: function render() {
-            var _this2 = this;
+	_createClass(Notes, [{
+		key: "render",
+		value: function render() {
+			var _this2 = this;
 
-            return _react2.default.createElement(
-                'div',
-                { className: 'patient_profile_route' },
-                this.state.show_create_notes_panel ? _react2.default.createElement(_AddNote2.default, {
-                    close_create_notes_panel: this.close_create_notes_panel.bind(this),
-                    add_note: this.props.add_note,
-                    patient: this.props.patient
-                }) : "",
-                _react2.default.createElement(
-                    'div',
-                    { id: 'create_note_btn_container' },
-                    _react2.default.createElement(
-                        'button',
-                        { id: 'create_note_btn',
-                            onClick: function onClick() {
-                                return _this2.show_create_notes_panel();
-                            } },
-                        _react2.default.createElement('i', { className: 'fa fa-plus' })
-                    ),
-                    _react2.default.createElement(
-                        'button',
-                        { id: 'expand_notes_btn', onClick: function onClick() {
-                                return _this2.expand_recent_notes();
-                            } },
-                        'Expand All'
-                    )
-                ),
-                this.show_notes(this.props)
-            );
-        }
-    }, {
-        key: 'show_create_notes_panel',
-        value: function show_create_notes_panel() {
-            this.setState({ show_create_notes_panel: true });
-            this.props.darken();
-        }
-    }, {
-        key: 'close_create_notes_panel',
-        value: function close_create_notes_panel() {
-            this.setState({ show_create_notes_panel: false });
-            this.props.darken();
-        }
-    }, {
-        key: 'show_notes',
-        value: function show_notes() {
-            var _this3 = this;
+			var _props = this.props,
+			    patient = _props.patient,
+			    add_note = _props.add_note;
 
-            return _react2.default.createElement(
-                'div',
-                { id: 'notes_container' },
-                this.props.patient.notes.map(function (note, x) {
-                    return _react2.default.createElement(
-                        'div',
-                        { key: x, className: 'note', onClick: function onClick(e) {
-                                return _this3.expand_note(e.target);
-                            } },
-                        _react2.default.createElement(
-                            'span',
-                            { id: 'note_date' },
-                            note.date
-                        ),
-                        _react2.default.createElement(
-                            'span',
-                            null,
-                            note.title
-                        ),
-                        _react2.default.createElement(
-                            'div',
-                            { id: 'note_content' },
-                            (0, _reactHtmlParser2.default)(note.content)
-                        )
-                    );
-                })
-            );
-        }
-    }, {
-        key: 'parse_note',
-        value: function parse_note(content) {
-            return _react2.default.createElement('div', null);
-        }
-    }, {
-        key: 'expand_note',
-        value: function expand_note(e) {
-            if (e.className !== "note") {
-                var parent = e.parentNode;
-                return parent.lastChild.classList.toggle("show");
-            }
-            e.childNodes[2].classList.toggle("show");
-        }
-    }, {
-        key: 'expand_recent_notes',
-        value: function expand_recent_notes(e) {
-            var _this4 = this;
+			return _react2.default.createElement(
+				"div",
+				{ className: "patient_profile_route" },
+				this.state.show_create_notes_panel ? _react2.default.createElement(_AddNote2.default, {
+					close_create_notes_panel: this.toggle_show_create_notes_panel.bind(this),
+					add_note: add_note,
+					patient: patient
+				}) : "",
+				_react2.default.createElement(
+					"div",
+					{ id: "create_note_btn_container" },
+					_react2.default.createElement(
+						"button",
+						{
+							id: "create_note_btn",
+							onClick: function onClick() {
+								return _this2.toggle_show_create_notes_panel();
+							}
+						},
+						_react2.default.createElement("i", { className: "fa fa-plus" })
+					),
+					_react2.default.createElement(
+						"button",
+						{
+							id: "expand_notes_btn",
+							onClick: function onClick() {
+								return _this2.expand_recent_notes();
+							}
+						},
+						"Expand All"
+					)
+				),
+				this.show_notes(this.props)
+			);
+		}
+	}, {
+		key: "toggle_show_create_notes_panel",
+		value: function toggle_show_create_notes_panel() {
+			this.setState({
+				show_create_notes_panel: !this.state.show_create_notes_panel
+			});
+			(0, _methods.darken)();
+		}
+	}, {
+		key: "show_notes",
+		value: function show_notes(props) {
+			var _this3 = this;
 
-            var notes = document.querySelectorAll(".note");
-            Array.prototype.map.call(notes, function (note) {
-                return _this4.expand_note(note);
-            });
-        }
-    }]);
+			return _react2.default.createElement(
+				"div",
+				{ id: "notes_container" },
+				props.patient.notes.map(function (note, x) {
+					return _react2.default.createElement(
+						"div",
+						{
+							key: x,
+							className: "note",
+							onClick: function onClick(e) {
+								return _this3.expand_note(e.target);
+							}
+						},
+						_react2.default.createElement(
+							"span",
+							{ id: "note_date" },
+							note.date
+						),
+						_react2.default.createElement(
+							"span",
+							null,
+							note.title
+						),
+						_react2.default.createElement(
+							"div",
+							{ id: "note_content" },
+							(0, _reactHtmlParser2.default)(note.content)
+						)
+					);
+				})
+			);
+		}
+	}, {
+		key: "parse_note",
+		value: function parse_note(content) {
+			return _react2.default.createElement("div", null);
+		}
+	}, {
+		key: "expand_note",
+		value: function expand_note(e) {
+			if (e.className !== "note") {
+				var parent = e.parentNode;
+				return parent.lastChild.classList.toggle("show");
+			}
+			e.childNodes[2].classList.toggle("show");
+		}
+	}, {
+		key: "expand_recent_notes",
+		value: function expand_recent_notes(e) {
+			var _this4 = this;
 
-    return Notes;
+			var notes = document.querySelectorAll(".note");
+			Array.prototype.map.call(notes, function (note) {
+				return _this4.expand_note(note);
+			});
+		}
+	}]);
+
+	return Notes;
 }(_react.Component);
 
 exports.default = Notes;
@@ -90057,6 +90061,7 @@ var PatientsContainer = function (_Component) {
 
 			return selected_patient ? _react2.default.createElement(_PatientProfile2.default, {
 				actions: boundActionCreators,
+				clear_searched_patients: this.clear_searched_patients.bind(this),
 				props: props,
 				darken: _methods.darken
 			}) : _react2.default.createElement(_PatientsList2.default, {
@@ -90073,6 +90078,14 @@ var PatientsContainer = function (_Component) {
 				show_add_patient_panel: !this.state.show_add_patient_panel
 			});
 			(0, _methods.darken)();
+		}
+	}, {
+		key: "clear_searched_patients",
+		value: function clear_searched_patients() {
+			return this.setState({
+				searched_patients: [],
+				search_match: false
+			});
 		}
 	}, {
 		key: "search_patient",
@@ -90392,14 +90405,9 @@ exports.default = function () {
 		case "SELECTED_PATIENT":
 			return (0, _util.new_state)(state, action.payload);
 		case "STOP_MEDICINE":
-			var patients = state.patients;
-			var updated_patient = action.payload.updated_patient;
-
-
-			return {
-				...state,
-				patients: (0, _util.update_patients)(patients, updated_patient)
-			};
+			return (0, _util.update_patients)(state, action.payload.updated_patient);
+		case "ADD_ITEM":
+			return (0, _util.update_patients)(state, action.payload.updated_patient);
 		default:
 			return state;
 	}
@@ -90447,15 +90455,20 @@ function send_post_req(demo) {
 	}
 }
 
-function update_patients(patients, updated_patient) {
-	var patient_index = patients.map(function (x) {
+function update_patients(state, updated_patient) {
+	var patient_index = state.patients.map(function (x) {
 		return x.id;
 	}).indexOf(updated_patient.id);
 
-	var updated_patients = patients.slice();
+	console.log(patient_index);
+
+	var updated_patients = state.patients.slice();
 	update_patients[patient_index] = updated_patient;
 
-	return updated_patients;
+	return {
+		...state,
+		patients: updated_patients
+	};
 }
 
 /* export function store_in_ls(user_data, lab_data) {

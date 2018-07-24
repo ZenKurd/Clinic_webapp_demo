@@ -33,13 +33,9 @@ export default (state = init_state, action) => {
 		case "SELECTED_PATIENT":
 			return new_state(state, action.payload);
 		case "STOP_MEDICINE":
-			const { patients } = state;
-			const { updated_patient } = action.payload;
-
-			return {
-				...state,
-				patients: update_patients(patients, updated_patient)
-			};
+			return update_patients(state, action.payload.updated_patient);
+		case "ADD_ITEM":
+			return update_patients(state, action.payload.updated_patient);
 		default:
 			return state;
 	}
