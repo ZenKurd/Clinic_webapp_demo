@@ -1,4 +1,9 @@
-import { init_calendar_events, send_post_req, new_state } from "./util.js";
+import {
+	init_calendar_events,
+	send_post_req,
+	new_state,
+	update_patients
+} from "./util.js";
 
 const init_state = {};
 
@@ -15,7 +20,7 @@ export default (state = init_state, action) => {
 				password: data.password,
 				lab_list: lab_data,
 				patients: data.patients,
-				selected_patient: [],
+				selected_patient: null,
 				diagnosis_list: data.diagnosis_list,
 				medicine_list: data.medicine_list,
 				medicine_dose_list: data.medicine_dose_list,
@@ -27,6 +32,14 @@ export default (state = init_state, action) => {
 			return new_state(state, action.payload);
 		case "SELECTED_PATIENT":
 			return new_state(state, action.payload);
+		case "STOP_MEDICINE":
+			const { patients } = state;
+			const { updated_patient } = action.payload;
+
+			return {
+				...state,
+				patients: update_patients(patients, updated_patient)
+			};
 		default:
 			return state;
 	}

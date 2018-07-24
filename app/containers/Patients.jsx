@@ -64,22 +64,20 @@ class PatientsContainer extends Component {
 		const { patients, selected_patient } = props;
 		const { searched_patients } = state;
 
-		if (selected_patient) {
-			return selected_patient.length > 0 ? (
-				<PatientProfile
-					actions={boundActionCreators}
-					props={props}
-					darken={darken}
-				/>
-			) : (
-				<PatientsList
-					patients={patients}
-					searched_patients={searched_patients}
-					render_patients={this.render_patients.bind(this)}
-					search_patient={this.search_patient.bind(this)}
-				/>
-			);
-		}
+		return selected_patient ? (
+			<PatientProfile
+				actions={boundActionCreators}
+				props={props}
+				darken={darken}
+			/>
+		) : (
+			<PatientsList
+				patients={patients}
+				searched_patients={searched_patients}
+				render_patients={this.render_patients.bind(this)}
+				search_patient={this.search_patient.bind(this)}
+			/>
+		);
 	}
 
 	toggle_patient_panel() {

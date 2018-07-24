@@ -57,7 +57,7 @@ export function add_appointment(appointment, patient) {
 	this.setState({
 		patients: patients,
 		events: appointments,
-		selected_patient: [selected_patient]
+		selected_patient: selected_patient
 	});
 
 	setTimeout(() => this.send_post_req(), 2000);
@@ -82,32 +82,24 @@ export function add_dropdown_item(item, category) {
 }
 
 export function stop_medicine(patient, medicine) {
-	let patients = this.state.patients.slice();
+	let updated_patient = patient;
+	let index = updated_patient.medicine.indexOf(medicine);
+	updated_patient.medicine[index].active = false;
 
-	for (let i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient.name) {
-			for (let j = 0; j < patients[i].medicine.length; j++) {
-				if (patients[i].medicine[j] === medicine) {
-					patients[i].medicine[j]["stopped"] = "stopped";
-					break;
-				}
-			}
-		}
-	}
-
-	this.setState({ patients: patients });
-
-	setTimeout(() => this.send_post_req(), 2000);
+	return {
+		type: "STOP_MEDICINE",
+		payload: { updated_patient: updated_patient }
+	};
 }
 
 export function remove_selected_patient() {
-	this.setState({ selected_patient: [] });
+	this.setState({ selected_patient: null });
 }
 
 export function show_patient_profile(patient) {
 	return {
 		type: "SELECTED_PATIENT",
-		payload: { selected_patient: [patient] }
+		payload: { selected_patient: patient }
 	};
 }
 

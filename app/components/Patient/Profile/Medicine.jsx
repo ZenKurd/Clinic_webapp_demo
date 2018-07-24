@@ -103,7 +103,7 @@ class Medicine extends Component {
 			<div id="medicine_list_container">
 				{this.props.patient.medicine.map(
 					(medicine, x) =>
-						moment(medicine.end) > moment() && !medicine.stopped ? (
+						moment(medicine.end) > moment() && medicine.active ? (
 							<div key={x} id="medicine">
 								<h4>{moment(medicine.start).format("MM-DD-YYYY")}</h4>
 								<h4>{moment(medicine.end).format("MM-DD-YYYY")}</h4>
@@ -130,14 +130,14 @@ class Medicine extends Component {
 			<div id="medicine_list_container">
 				{this.props.patient.medicine.map(
 					(medicine, x) =>
-						moment(medicine.end) < moment() || medicine.stopped ? (
+						moment(medicine.end) < moment() || !medicine.active ? (
 							<div key={x} id="medicine">
 								<h4>{moment(medicine.start).format("MM-DD-YYYY")}</h4>
 								<h4>{moment(medicine.end).format("MM-DD-YYYY")}</h4>
 								<h4>{medicine.name.match(/(\w+)/)[0]}</h4>
 								<h4>{medicine.strength}</h4>
 								<h4>{medicine.dose}</h4>
-								<h4>{medicine.stopped}</h4>
+								<h4>{medicine.active}</h4>
 							</div>
 						) : (
 							""

@@ -44846,1257 +44846,6 @@ require.register("path-to-regexp/node_modules/isarray/index.js", function(export
   })();
 });
 
-require.register("pikaday/pikaday.js", function(exports, require, module) {
-  require = __makeRelativeRequire(require, {}, "pikaday");
-  (function() {
-    /*!
- * Pikaday
- *
- * Copyright © 2014 David Bushell | BSD & MIT license | https://github.com/dbushell/Pikaday
- */
-
-(function (root, factory)
-{
-    'use strict';
-
-    var moment;
-    if (typeof exports === 'object') {
-        // CommonJS module
-        // Load moment.js as an optional dependency
-        try { moment = require('moment'); } catch (e) {}
-        module.exports = factory(moment);
-    } else if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(function (req)
-        {
-            // Load moment.js as an optional dependency
-            var id = 'moment';
-            try { moment = req(id); } catch (e) {}
-            return factory(moment);
-        });
-    } else {
-        root.Pikaday = factory(root.moment);
-    }
-}(this, function (moment)
-{
-    'use strict';
-
-    /**
-     * feature detection and helper functions
-     */
-    var hasMoment = typeof moment === 'function',
-
-    hasEventListeners = !!window.addEventListener,
-
-    document = window.document,
-
-    sto = window.setTimeout,
-
-    addEvent = function(el, e, callback, capture)
-    {
-        if (hasEventListeners) {
-            el.addEventListener(e, callback, !!capture);
-        } else {
-            el.attachEvent('on' + e, callback);
-        }
-    },
-
-    removeEvent = function(el, e, callback, capture)
-    {
-        if (hasEventListeners) {
-            el.removeEventListener(e, callback, !!capture);
-        } else {
-            el.detachEvent('on' + e, callback);
-        }
-    },
-
-    trim = function(str)
-    {
-        return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g,'');
-    },
-
-    hasClass = function(el, cn)
-    {
-        return (' ' + el.className + ' ').indexOf(' ' + cn + ' ') !== -1;
-    },
-
-    addClass = function(el, cn)
-    {
-        if (!hasClass(el, cn)) {
-            el.className = (el.className === '') ? cn : el.className + ' ' + cn;
-        }
-    },
-
-    removeClass = function(el, cn)
-    {
-        el.className = trim((' ' + el.className + ' ').replace(' ' + cn + ' ', ' '));
-    },
-
-    isArray = function(obj)
-    {
-        return (/Array/).test(Object.prototype.toString.call(obj));
-    },
-
-    isDate = function(obj)
-    {
-        return (/Date/).test(Object.prototype.toString.call(obj)) && !isNaN(obj.getTime());
-    },
-
-    isWeekend = function(date)
-    {
-        var day = date.getDay();
-        return day === 0 || day === 6;
-    },
-
-    isLeapYear = function(year)
-    {
-        // solution by Matti Virkkunen: http://stackoverflow.com/a/4881951
-        return year % 4 === 0 && year % 100 !== 0 || year % 400 === 0;
-    },
-
-    getDaysInMonth = function(year, month)
-    {
-        return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
-    },
-
-    setToStartOfDay = function(date)
-    {
-        if (isDate(date)) date.setHours(0,0,0,0);
-    },
-
-    compareDates = function(a,b)
-    {
-        // weak date comparison (use setToStartOfDay(date) to ensure correct result)
-        return a.getTime() === b.getTime();
-    },
-
-    extend = function(to, from, overwrite)
-    {
-        var prop, hasProp;
-        for (prop in from) {
-            hasProp = to[prop] !== undefined;
-            if (hasProp && typeof from[prop] === 'object' && from[prop] !== null && from[prop].nodeName === undefined) {
-                if (isDate(from[prop])) {
-                    if (overwrite) {
-                        to[prop] = new Date(from[prop].getTime());
-                    }
-                }
-                else if (isArray(from[prop])) {
-                    if (overwrite) {
-                        to[prop] = from[prop].slice(0);
-                    }
-                } else {
-                    to[prop] = extend({}, from[prop], overwrite);
-                }
-            } else if (overwrite || !hasProp) {
-                to[prop] = from[prop];
-            }
-        }
-        return to;
-    },
-
-    fireEvent = function(el, eventName, data)
-    {
-        var ev;
-
-        if (document.createEvent) {
-            ev = document.createEvent('HTMLEvents');
-            ev.initEvent(eventName, true, false);
-            ev = extend(ev, data);
-            el.dispatchEvent(ev);
-        } else if (document.createEventObject) {
-            ev = document.createEventObject();
-            ev = extend(ev, data);
-            el.fireEvent('on' + eventName, ev);
-        }
-    },
-
-    adjustCalendar = function(calendar) {
-        if (calendar.month < 0) {
-            calendar.year -= Math.ceil(Math.abs(calendar.month)/12);
-            calendar.month += 12;
-        }
-        if (calendar.month > 11) {
-            calendar.year += Math.floor(Math.abs(calendar.month)/12);
-            calendar.month -= 12;
-        }
-        return calendar;
-    },
-
-    /**
-     * defaults and localisation
-     */
-    defaults = {
-
-        // bind the picker to a form field
-        field: null,
-
-        // automatically show/hide the picker on `field` focus (default `true` if `field` is set)
-        bound: undefined,
-
-        // position of the datepicker, relative to the field (default to bottom & left)
-        // ('bottom' & 'left' keywords are not used, 'top' & 'right' are modifier on the bottom/left position)
-        position: 'bottom left',
-
-        // automatically fit in the viewport even if it means repositioning from the position option
-        reposition: true,
-
-        // the default output format for `.toString()` and `field` value
-        format: 'YYYY-MM-DD',
-
-        // the toString function which gets passed a current date object and format
-        // and returns a string
-        toString: null,
-
-        // used to create date object from current input string
-        parse: null,
-
-        // the initial date to view when first opened
-        defaultDate: null,
-
-        // make the `defaultDate` the initial selected value
-        setDefaultDate: false,
-
-        // first day of week (0: Sunday, 1: Monday etc)
-        firstDay: 0,
-
-        // the default flag for moment's strict date parsing
-        formatStrict: false,
-
-        // the minimum/earliest date that can be selected
-        minDate: null,
-        // the maximum/latest date that can be selected
-        maxDate: null,
-
-        // number of years either side, or array of upper/lower range
-        yearRange: 10,
-
-        // show week numbers at head of row
-        showWeekNumber: false,
-
-        // Week picker mode
-        pickWholeWeek: false,
-
-        // used internally (don't config outside)
-        minYear: 0,
-        maxYear: 9999,
-        minMonth: undefined,
-        maxMonth: undefined,
-
-        startRange: null,
-        endRange: null,
-
-        isRTL: false,
-
-        // Additional text to append to the year in the calendar title
-        yearSuffix: '',
-
-        // Render the month after year in the calendar title
-        showMonthAfterYear: false,
-
-        // Render days of the calendar grid that fall in the next or previous month
-        showDaysInNextAndPreviousMonths: false,
-
-        // Allows user to select days that fall in the next or previous month
-        enableSelectionDaysInNextAndPreviousMonths: false,
-
-        // how many months are visible
-        numberOfMonths: 1,
-
-        // when numberOfMonths is used, this will help you to choose where the main calendar will be (default `left`, can be set to `right`)
-        // only used for the first display or when a selected date is not visible
-        mainCalendar: 'left',
-
-        // Specify a DOM element to render the calendar in
-        container: undefined,
-
-        // Blur field when date is selected
-        blurFieldOnSelect : true,
-
-        // internationalization
-        i18n: {
-            previousMonth : 'Previous Month',
-            nextMonth     : 'Next Month',
-            months        : ['January','February','March','April','May','June','July','August','September','October','November','December'],
-            weekdays      : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-            weekdaysShort : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-        },
-
-        // Theme Classname
-        theme: null,
-
-        // events array
-        events: [],
-
-        // callback function
-        onSelect: null,
-        onOpen: null,
-        onClose: null,
-        onDraw: null,
-
-        // Enable keyboard input
-        keyboardInput: true
-    },
-
-
-    /**
-     * templating functions to abstract HTML rendering
-     */
-    renderDayName = function(opts, day, abbr)
-    {
-        day += opts.firstDay;
-        while (day >= 7) {
-            day -= 7;
-        }
-        return abbr ? opts.i18n.weekdaysShort[day] : opts.i18n.weekdays[day];
-    },
-
-    renderDay = function(opts)
-    {
-        var arr = [];
-        var ariaSelected = 'false';
-        if (opts.isEmpty) {
-            if (opts.showDaysInNextAndPreviousMonths) {
-                arr.push('is-outside-current-month');
-
-                if(!opts.enableSelectionDaysInNextAndPreviousMonths) {
-                    arr.push('is-selection-disabled');
-                }
-
-            } else {
-                return '<td class="is-empty"></td>';
-            }
-        }
-        if (opts.isDisabled) {
-            arr.push('is-disabled');
-        }
-        if (opts.isToday) {
-            arr.push('is-today');
-        }
-        if (opts.isSelected) {
-            arr.push('is-selected');
-            ariaSelected = 'true';
-        }
-        if (opts.hasEvent) {
-            arr.push('has-event');
-        }
-        if (opts.isInRange) {
-            arr.push('is-inrange');
-        }
-        if (opts.isStartRange) {
-            arr.push('is-startrange');
-        }
-        if (opts.isEndRange) {
-            arr.push('is-endrange');
-        }
-        return '<td data-day="' + opts.day + '" class="' + arr.join(' ') + '" aria-selected="' + ariaSelected + '">' +
-                 '<button class="pika-button pika-day" type="button" ' +
-                    'data-pika-year="' + opts.year + '" data-pika-month="' + opts.month + '" data-pika-day="' + opts.day + '">' +
-                        opts.day +
-                 '</button>' +
-               '</td>';
-    },
-
-    renderWeek = function (d, m, y) {
-        // Lifted from http://javascript.about.com/library/blweekyear.htm, lightly modified.
-        var onejan = new Date(y, 0, 1),
-            weekNum = Math.ceil((((new Date(y, m, d) - onejan) / 86400000) + onejan.getDay()+1)/7);
-        return '<td class="pika-week">' + weekNum + '</td>';
-    },
-
-    renderRow = function(days, isRTL, pickWholeWeek, isRowSelected)
-    {
-        return '<tr class="pika-row' + (pickWholeWeek ? ' pick-whole-week' : '') + (isRowSelected ? ' is-selected' : '') + '">' + (isRTL ? days.reverse() : days).join('') + '</tr>';
-    },
-
-    renderBody = function(rows)
-    {
-        return '<tbody>' + rows.join('') + '</tbody>';
-    },
-
-    renderHead = function(opts)
-    {
-        var i, arr = [];
-        if (opts.showWeekNumber) {
-            arr.push('<th></th>');
-        }
-        for (i = 0; i < 7; i++) {
-            arr.push('<th scope="col"><abbr title="' + renderDayName(opts, i) + '">' + renderDayName(opts, i, true) + '</abbr></th>');
-        }
-        return '<thead><tr>' + (opts.isRTL ? arr.reverse() : arr).join('') + '</tr></thead>';
-    },
-
-    renderTitle = function(instance, c, year, month, refYear, randId)
-    {
-        var i, j, arr,
-            opts = instance._o,
-            isMinYear = year === opts.minYear,
-            isMaxYear = year === opts.maxYear,
-            html = '<div id="' + randId + '" class="pika-title" role="heading" aria-live="assertive">',
-            monthHtml,
-            yearHtml,
-            prev = true,
-            next = true;
-
-        for (arr = [], i = 0; i < 12; i++) {
-            arr.push('<option value="' + (year === refYear ? i - c : 12 + i - c) + '"' +
-                (i === month ? ' selected="selected"': '') +
-                ((isMinYear && i < opts.minMonth) || (isMaxYear && i > opts.maxMonth) ? 'disabled="disabled"' : '') + '>' +
-                opts.i18n.months[i] + '</option>');
-        }
-
-        monthHtml = '<div class="pika-label">' + opts.i18n.months[month] + '<select class="pika-select pika-select-month" tabindex="-1">' + arr.join('') + '</select></div>';
-
-        if (isArray(opts.yearRange)) {
-            i = opts.yearRange[0];
-            j = opts.yearRange[1] + 1;
-        } else {
-            i = year - opts.yearRange;
-            j = 1 + year + opts.yearRange;
-        }
-
-        for (arr = []; i < j && i <= opts.maxYear; i++) {
-            if (i >= opts.minYear) {
-                arr.push('<option value="' + i + '"' + (i === year ? ' selected="selected"': '') + '>' + (i) + '</option>');
-            }
-        }
-        yearHtml = '<div class="pika-label">' + year + opts.yearSuffix + '<select class="pika-select pika-select-year" tabindex="-1">' + arr.join('') + '</select></div>';
-
-        if (opts.showMonthAfterYear) {
-            html += yearHtml + monthHtml;
-        } else {
-            html += monthHtml + yearHtml;
-        }
-
-        if (isMinYear && (month === 0 || opts.minMonth >= month)) {
-            prev = false;
-        }
-
-        if (isMaxYear && (month === 11 || opts.maxMonth <= month)) {
-            next = false;
-        }
-
-        if (c === 0) {
-            html += '<button class="pika-prev' + (prev ? '' : ' is-disabled') + '" type="button">' + opts.i18n.previousMonth + '</button>';
-        }
-        if (c === (instance._o.numberOfMonths - 1) ) {
-            html += '<button class="pika-next' + (next ? '' : ' is-disabled') + '" type="button">' + opts.i18n.nextMonth + '</button>';
-        }
-
-        return html += '</div>';
-    },
-
-    renderTable = function(opts, data, randId)
-    {
-        return '<table cellpadding="0" cellspacing="0" class="pika-table" role="grid" aria-labelledby="' + randId + '">' + renderHead(opts) + renderBody(data) + '</table>';
-    },
-
-
-    /**
-     * Pikaday constructor
-     */
-    Pikaday = function(options)
-    {
-        var self = this,
-            opts = self.config(options);
-
-        self._onMouseDown = function(e)
-        {
-            if (!self._v) {
-                return;
-            }
-            e = e || window.event;
-            var target = e.target || e.srcElement;
-            if (!target) {
-                return;
-            }
-
-            if (!hasClass(target, 'is-disabled')) {
-                if (hasClass(target, 'pika-button') && !hasClass(target, 'is-empty') && !hasClass(target.parentNode, 'is-disabled')) {
-                    self.setDate(new Date(target.getAttribute('data-pika-year'), target.getAttribute('data-pika-month'), target.getAttribute('data-pika-day')));
-                    if (opts.bound) {
-                        sto(function() {
-                            self.hide();
-                            if (opts.blurFieldOnSelect && opts.field) {
-                                opts.field.blur();
-                            }
-                        }, 100);
-                    }
-                }
-                else if (hasClass(target, 'pika-prev')) {
-                    self.prevMonth();
-                }
-                else if (hasClass(target, 'pika-next')) {
-                    self.nextMonth();
-                }
-            }
-            if (!hasClass(target, 'pika-select')) {
-                // if this is touch event prevent mouse events emulation
-                if (e.preventDefault) {
-                    e.preventDefault();
-                } else {
-                    e.returnValue = false;
-                    return false;
-                }
-            } else {
-                self._c = true;
-            }
-        };
-
-        self._onChange = function(e)
-        {
-            e = e || window.event;
-            var target = e.target || e.srcElement;
-            if (!target) {
-                return;
-            }
-            if (hasClass(target, 'pika-select-month')) {
-                self.gotoMonth(target.value);
-            }
-            else if (hasClass(target, 'pika-select-year')) {
-                self.gotoYear(target.value);
-            }
-        };
-
-        self._onKeyChange = function(e)
-        {
-            e = e || window.event;
-
-            if (self.isVisible()) {
-
-                switch(e.keyCode){
-                    case 13:
-                    case 27:
-                        if (opts.field) {
-                            opts.field.blur();
-                        }
-                        break;
-                    case 37:
-                        e.preventDefault();
-                        self.adjustDate('subtract', 1);
-                        break;
-                    case 38:
-                        self.adjustDate('subtract', 7);
-                        break;
-                    case 39:
-                        self.adjustDate('add', 1);
-                        break;
-                    case 40:
-                        self.adjustDate('add', 7);
-                        break;
-                }
-            }
-        };
-
-        self._onInputChange = function(e)
-        {
-            var date;
-
-            if (e.firedBy === self) {
-                return;
-            }
-            if (opts.parse) {
-                date = opts.parse(opts.field.value, opts.format);
-            } else if (hasMoment) {
-                date = moment(opts.field.value, opts.format, opts.formatStrict);
-                date = (date && date.isValid()) ? date.toDate() : null;
-            }
-            else {
-                date = new Date(Date.parse(opts.field.value));
-            }
-            if (isDate(date)) {
-              self.setDate(date);
-            }
-            if (!self._v) {
-                self.show();
-            }
-        };
-
-        self._onInputFocus = function()
-        {
-            self.show();
-        };
-
-        self._onInputClick = function()
-        {
-            self.show();
-        };
-
-        self._onInputBlur = function()
-        {
-            // IE allows pika div to gain focus; catch blur the input field
-            var pEl = document.activeElement;
-            do {
-                if (hasClass(pEl, 'pika-single')) {
-                    return;
-                }
-            }
-            while ((pEl = pEl.parentNode));
-
-            if (!self._c) {
-                self._b = sto(function() {
-                    self.hide();
-                }, 50);
-            }
-            self._c = false;
-        };
-
-        self._onClick = function(e)
-        {
-            e = e || window.event;
-            var target = e.target || e.srcElement,
-                pEl = target;
-            if (!target) {
-                return;
-            }
-            if (!hasEventListeners && hasClass(target, 'pika-select')) {
-                if (!target.onchange) {
-                    target.setAttribute('onchange', 'return;');
-                    addEvent(target, 'change', self._onChange);
-                }
-            }
-            do {
-                if (hasClass(pEl, 'pika-single') || pEl === opts.trigger) {
-                    return;
-                }
-            }
-            while ((pEl = pEl.parentNode));
-            if (self._v && target !== opts.trigger && pEl !== opts.trigger) {
-                self.hide();
-            }
-        };
-
-        self.el = document.createElement('div');
-        self.el.className = 'pika-single' + (opts.isRTL ? ' is-rtl' : '') + (opts.theme ? ' ' + opts.theme : '');
-
-        addEvent(self.el, 'mousedown', self._onMouseDown, true);
-        addEvent(self.el, 'touchend', self._onMouseDown, true);
-        addEvent(self.el, 'change', self._onChange);
-
-        if (opts.keyboardInput) {
-            addEvent(document, 'keydown', self._onKeyChange);
-        }
-
-        if (opts.field) {
-            if (opts.container) {
-                opts.container.appendChild(self.el);
-            } else if (opts.bound) {
-                document.body.appendChild(self.el);
-            } else {
-                opts.field.parentNode.insertBefore(self.el, opts.field.nextSibling);
-            }
-            addEvent(opts.field, 'change', self._onInputChange);
-
-            if (!opts.defaultDate) {
-                if (hasMoment && opts.field.value) {
-                    opts.defaultDate = moment(opts.field.value, opts.format).toDate();
-                } else {
-                    opts.defaultDate = new Date(Date.parse(opts.field.value));
-                }
-                opts.setDefaultDate = true;
-            }
-        }
-
-        var defDate = opts.defaultDate;
-
-        if (isDate(defDate)) {
-            if (opts.setDefaultDate) {
-                self.setDate(defDate, true);
-            } else {
-                self.gotoDate(defDate);
-            }
-        } else {
-            self.gotoDate(new Date());
-        }
-
-        if (opts.bound) {
-            this.hide();
-            self.el.className += ' is-bound';
-            addEvent(opts.trigger, 'click', self._onInputClick);
-            addEvent(opts.trigger, 'focus', self._onInputFocus);
-            addEvent(opts.trigger, 'blur', self._onInputBlur);
-        } else {
-            this.show();
-        }
-    };
-
-
-    /**
-     * public Pikaday API
-     */
-    Pikaday.prototype = {
-
-
-        /**
-         * configure functionality
-         */
-        config: function(options)
-        {
-            if (!this._o) {
-                this._o = extend({}, defaults, true);
-            }
-
-            var opts = extend(this._o, options, true);
-
-            opts.isRTL = !!opts.isRTL;
-
-            opts.field = (opts.field && opts.field.nodeName) ? opts.field : null;
-
-            opts.theme = (typeof opts.theme) === 'string' && opts.theme ? opts.theme : null;
-
-            opts.bound = !!(opts.bound !== undefined ? opts.field && opts.bound : opts.field);
-
-            opts.trigger = (opts.trigger && opts.trigger.nodeName) ? opts.trigger : opts.field;
-
-            opts.disableWeekends = !!opts.disableWeekends;
-
-            opts.disableDayFn = (typeof opts.disableDayFn) === 'function' ? opts.disableDayFn : null;
-
-            var nom = parseInt(opts.numberOfMonths, 10) || 1;
-            opts.numberOfMonths = nom > 4 ? 4 : nom;
-
-            if (!isDate(opts.minDate)) {
-                opts.minDate = false;
-            }
-            if (!isDate(opts.maxDate)) {
-                opts.maxDate = false;
-            }
-            if ((opts.minDate && opts.maxDate) && opts.maxDate < opts.minDate) {
-                opts.maxDate = opts.minDate = false;
-            }
-            if (opts.minDate) {
-                this.setMinDate(opts.minDate);
-            }
-            if (opts.maxDate) {
-                this.setMaxDate(opts.maxDate);
-            }
-
-            if (isArray(opts.yearRange)) {
-                var fallback = new Date().getFullYear() - 10;
-                opts.yearRange[0] = parseInt(opts.yearRange[0], 10) || fallback;
-                opts.yearRange[1] = parseInt(opts.yearRange[1], 10) || fallback;
-            } else {
-                opts.yearRange = Math.abs(parseInt(opts.yearRange, 10)) || defaults.yearRange;
-                if (opts.yearRange > 100) {
-                    opts.yearRange = 100;
-                }
-            }
-
-            return opts;
-        },
-
-        /**
-         * return a formatted string of the current selection (using Moment.js if available)
-         */
-        toString: function(format)
-        {
-            format = format || this._o.format;
-            if (!isDate(this._d)) {
-                return '';
-            }
-            if (this._o.toString) {
-              return this._o.toString(this._d, format);
-            }
-            if (hasMoment) {
-              return moment(this._d).format(format);
-            }
-            return this._d.toDateString();
-        },
-
-        /**
-         * return a Moment.js object of the current selection (if available)
-         */
-        getMoment: function()
-        {
-            return hasMoment ? moment(this._d) : null;
-        },
-
-        /**
-         * set the current selection from a Moment.js object (if available)
-         */
-        setMoment: function(date, preventOnSelect)
-        {
-            if (hasMoment && moment.isMoment(date)) {
-                this.setDate(date.toDate(), preventOnSelect);
-            }
-        },
-
-        /**
-         * return a Date object of the current selection
-         */
-        getDate: function()
-        {
-            return isDate(this._d) ? new Date(this._d.getTime()) : null;
-        },
-
-        /**
-         * set the current selection
-         */
-        setDate: function(date, preventOnSelect)
-        {
-            if (!date) {
-                this._d = null;
-
-                if (this._o.field) {
-                    this._o.field.value = '';
-                    fireEvent(this._o.field, 'change', { firedBy: this });
-                }
-
-                return this.draw();
-            }
-            if (typeof date === 'string') {
-                date = new Date(Date.parse(date));
-            }
-            if (!isDate(date)) {
-                return;
-            }
-
-            var min = this._o.minDate,
-                max = this._o.maxDate;
-
-            if (isDate(min) && date < min) {
-                date = min;
-            } else if (isDate(max) && date > max) {
-                date = max;
-            }
-
-            this._d = new Date(date.getTime());
-            setToStartOfDay(this._d);
-            this.gotoDate(this._d);
-
-            if (this._o.field) {
-                this._o.field.value = this.toString();
-                fireEvent(this._o.field, 'change', { firedBy: this });
-            }
-            if (!preventOnSelect && typeof this._o.onSelect === 'function') {
-                this._o.onSelect.call(this, this.getDate());
-            }
-        },
-
-        /**
-         * change view to a specific date
-         */
-        gotoDate: function(date)
-        {
-            var newCalendar = true;
-
-            if (!isDate(date)) {
-                return;
-            }
-
-            if (this.calendars) {
-                var firstVisibleDate = new Date(this.calendars[0].year, this.calendars[0].month, 1),
-                    lastVisibleDate = new Date(this.calendars[this.calendars.length-1].year, this.calendars[this.calendars.length-1].month, 1),
-                    visibleDate = date.getTime();
-                // get the end of the month
-                lastVisibleDate.setMonth(lastVisibleDate.getMonth()+1);
-                lastVisibleDate.setDate(lastVisibleDate.getDate()-1);
-                newCalendar = (visibleDate < firstVisibleDate.getTime() || lastVisibleDate.getTime() < visibleDate);
-            }
-
-            if (newCalendar) {
-                this.calendars = [{
-                    month: date.getMonth(),
-                    year: date.getFullYear()
-                }];
-                if (this._o.mainCalendar === 'right') {
-                    this.calendars[0].month += 1 - this._o.numberOfMonths;
-                }
-            }
-
-            this.adjustCalendars();
-        },
-
-        adjustDate: function(sign, days) {
-
-            var day = this.getDate() || new Date();
-            var difference = parseInt(days)*24*60*60*1000;
-
-            var newDay;
-
-            if (sign === 'add') {
-                newDay = new Date(day.valueOf() + difference);
-            } else if (sign === 'subtract') {
-                newDay = new Date(day.valueOf() - difference);
-            }
-
-            this.setDate(newDay);
-        },
-
-        adjustCalendars: function() {
-            this.calendars[0] = adjustCalendar(this.calendars[0]);
-            for (var c = 1; c < this._o.numberOfMonths; c++) {
-                this.calendars[c] = adjustCalendar({
-                    month: this.calendars[0].month + c,
-                    year: this.calendars[0].year
-                });
-            }
-            this.draw();
-        },
-
-        gotoToday: function()
-        {
-            this.gotoDate(new Date());
-        },
-
-        /**
-         * change view to a specific month (zero-index, e.g. 0: January)
-         */
-        gotoMonth: function(month)
-        {
-            if (!isNaN(month)) {
-                this.calendars[0].month = parseInt(month, 10);
-                this.adjustCalendars();
-            }
-        },
-
-        nextMonth: function()
-        {
-            this.calendars[0].month++;
-            this.adjustCalendars();
-        },
-
-        prevMonth: function()
-        {
-            this.calendars[0].month--;
-            this.adjustCalendars();
-        },
-
-        /**
-         * change view to a specific full year (e.g. "2012")
-         */
-        gotoYear: function(year)
-        {
-            if (!isNaN(year)) {
-                this.calendars[0].year = parseInt(year, 10);
-                this.adjustCalendars();
-            }
-        },
-
-        /**
-         * change the minDate
-         */
-        setMinDate: function(value)
-        {
-            if(value instanceof Date) {
-                setToStartOfDay(value);
-                this._o.minDate = value;
-                this._o.minYear  = value.getFullYear();
-                this._o.minMonth = value.getMonth();
-            } else {
-                this._o.minDate = defaults.minDate;
-                this._o.minYear  = defaults.minYear;
-                this._o.minMonth = defaults.minMonth;
-                this._o.startRange = defaults.startRange;
-            }
-
-            this.draw();
-        },
-
-        /**
-         * change the maxDate
-         */
-        setMaxDate: function(value)
-        {
-            if(value instanceof Date) {
-                setToStartOfDay(value);
-                this._o.maxDate = value;
-                this._o.maxYear = value.getFullYear();
-                this._o.maxMonth = value.getMonth();
-            } else {
-                this._o.maxDate = defaults.maxDate;
-                this._o.maxYear = defaults.maxYear;
-                this._o.maxMonth = defaults.maxMonth;
-                this._o.endRange = defaults.endRange;
-            }
-
-            this.draw();
-        },
-
-        setStartRange: function(value)
-        {
-            this._o.startRange = value;
-        },
-
-        setEndRange: function(value)
-        {
-            this._o.endRange = value;
-        },
-
-        /**
-         * refresh the HTML
-         */
-        draw: function(force)
-        {
-            if (!this._v && !force) {
-                return;
-            }
-            var opts = this._o,
-                minYear = opts.minYear,
-                maxYear = opts.maxYear,
-                minMonth = opts.minMonth,
-                maxMonth = opts.maxMonth,
-                html = '',
-                randId;
-
-            if (this._y <= minYear) {
-                this._y = minYear;
-                if (!isNaN(minMonth) && this._m < minMonth) {
-                    this._m = minMonth;
-                }
-            }
-            if (this._y >= maxYear) {
-                this._y = maxYear;
-                if (!isNaN(maxMonth) && this._m > maxMonth) {
-                    this._m = maxMonth;
-                }
-            }
-
-            randId = 'pika-title-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 2);
-
-            for (var c = 0; c < opts.numberOfMonths; c++) {
-                html += '<div class="pika-lendar">' + renderTitle(this, c, this.calendars[c].year, this.calendars[c].month, this.calendars[0].year, randId) + this.render(this.calendars[c].year, this.calendars[c].month, randId) + '</div>';
-            }
-
-            this.el.innerHTML = html;
-
-            if (opts.bound) {
-                if(opts.field.type !== 'hidden') {
-                    sto(function() {
-                        opts.trigger.focus();
-                    }, 1);
-                }
-            }
-
-            if (typeof this._o.onDraw === 'function') {
-                this._o.onDraw(this);
-            }
-
-            if (opts.bound) {
-                // let the screen reader user know to use arrow keys
-                opts.field.setAttribute('aria-label', 'Use the arrow keys to pick a date');
-            }
-        },
-
-        adjustPosition: function()
-        {
-            var field, pEl, width, height, viewportWidth, viewportHeight, scrollTop, left, top, clientRect;
-
-            if (this._o.container) return;
-
-            this.el.style.position = 'absolute';
-
-            field = this._o.trigger;
-            pEl = field;
-            width = this.el.offsetWidth;
-            height = this.el.offsetHeight;
-            viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-            viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-            scrollTop = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
-
-            if (typeof field.getBoundingClientRect === 'function') {
-                clientRect = field.getBoundingClientRect();
-                left = clientRect.left + window.pageXOffset;
-                top = clientRect.bottom + window.pageYOffset;
-            } else {
-                left = pEl.offsetLeft;
-                top  = pEl.offsetTop + pEl.offsetHeight;
-                while((pEl = pEl.offsetParent)) {
-                    left += pEl.offsetLeft;
-                    top  += pEl.offsetTop;
-                }
-            }
-
-            // default position is bottom & left
-            if ((this._o.reposition && left + width > viewportWidth) ||
-                (
-                    this._o.position.indexOf('right') > -1 &&
-                    left - width + field.offsetWidth > 0
-                )
-            ) {
-                left = left - width + field.offsetWidth;
-            }
-            if ((this._o.reposition && top + height > viewportHeight + scrollTop) ||
-                (
-                    this._o.position.indexOf('top') > -1 &&
-                    top - height - field.offsetHeight > 0
-                )
-            ) {
-                top = top - height - field.offsetHeight;
-            }
-
-            this.el.style.left = left + 'px';
-            this.el.style.top = top + 'px';
-        },
-
-        /**
-         * render HTML for a particular month
-         */
-        render: function(year, month, randId)
-        {
-            var opts   = this._o,
-                now    = new Date(),
-                days   = getDaysInMonth(year, month),
-                before = new Date(year, month, 1).getDay(),
-                data   = [],
-                row    = [];
-            setToStartOfDay(now);
-            if (opts.firstDay > 0) {
-                before -= opts.firstDay;
-                if (before < 0) {
-                    before += 7;
-                }
-            }
-            var previousMonth = month === 0 ? 11 : month - 1,
-                nextMonth = month === 11 ? 0 : month + 1,
-                yearOfPreviousMonth = month === 0 ? year - 1 : year,
-                yearOfNextMonth = month === 11 ? year + 1 : year,
-                daysInPreviousMonth = getDaysInMonth(yearOfPreviousMonth, previousMonth);
-            var cells = days + before,
-                after = cells;
-            while(after > 7) {
-                after -= 7;
-            }
-            cells += 7 - after;
-            var isWeekSelected = false;
-            for (var i = 0, r = 0; i < cells; i++)
-            {
-                var day = new Date(year, month, 1 + (i - before)),
-                    isSelected = isDate(this._d) ? compareDates(day, this._d) : false,
-                    isToday = compareDates(day, now),
-                    hasEvent = opts.events.indexOf(day.toDateString()) !== -1 ? true : false,
-                    isEmpty = i < before || i >= (days + before),
-                    dayNumber = 1 + (i - before),
-                    monthNumber = month,
-                    yearNumber = year,
-                    isStartRange = opts.startRange && compareDates(opts.startRange, day),
-                    isEndRange = opts.endRange && compareDates(opts.endRange, day),
-                    isInRange = opts.startRange && opts.endRange && opts.startRange < day && day < opts.endRange,
-                    isDisabled = (opts.minDate && day < opts.minDate) ||
-                                 (opts.maxDate && day > opts.maxDate) ||
-                                 (opts.disableWeekends && isWeekend(day)) ||
-                                 (opts.disableDayFn && opts.disableDayFn(day));
-
-                if (isEmpty) {
-                    if (i < before) {
-                        dayNumber = daysInPreviousMonth + dayNumber;
-                        monthNumber = previousMonth;
-                        yearNumber = yearOfPreviousMonth;
-                    } else {
-                        dayNumber = dayNumber - days;
-                        monthNumber = nextMonth;
-                        yearNumber = yearOfNextMonth;
-                    }
-                }
-
-                var dayConfig = {
-                        day: dayNumber,
-                        month: monthNumber,
-                        year: yearNumber,
-                        hasEvent: hasEvent,
-                        isSelected: isSelected,
-                        isToday: isToday,
-                        isDisabled: isDisabled,
-                        isEmpty: isEmpty,
-                        isStartRange: isStartRange,
-                        isEndRange: isEndRange,
-                        isInRange: isInRange,
-                        showDaysInNextAndPreviousMonths: opts.showDaysInNextAndPreviousMonths,
-                        enableSelectionDaysInNextAndPreviousMonths: opts.enableSelectionDaysInNextAndPreviousMonths
-                    };
-
-                if (opts.pickWholeWeek && isSelected) {
-                    isWeekSelected = true;
-                }
-
-                row.push(renderDay(dayConfig));
-
-                if (++r === 7) {
-                    if (opts.showWeekNumber) {
-                        row.unshift(renderWeek(i - before, month, year));
-                    }
-                    data.push(renderRow(row, opts.isRTL, opts.pickWholeWeek, isWeekSelected));
-                    row = [];
-                    r = 0;
-                    isWeekSelected = false;
-                }
-            }
-            return renderTable(opts, data, randId);
-        },
-
-        isVisible: function()
-        {
-            return this._v;
-        },
-
-        show: function()
-        {
-            if (!this.isVisible()) {
-                this._v = true;
-                this.draw();
-                removeClass(this.el, 'is-hidden');
-                if (this._o.bound) {
-                    addEvent(document, 'click', this._onClick);
-                    this.adjustPosition();
-                }
-                if (typeof this._o.onOpen === 'function') {
-                    this._o.onOpen.call(this);
-                }
-            }
-        },
-
-        hide: function()
-        {
-            var v = this._v;
-            if (v !== false) {
-                if (this._o.bound) {
-                    removeEvent(document, 'click', this._onClick);
-                }
-                this.el.style.position = 'static'; // reset
-                this.el.style.left = 'auto';
-                this.el.style.top = 'auto';
-                addClass(this.el, 'is-hidden');
-                this._v = false;
-                if (v !== undefined && typeof this._o.onClose === 'function') {
-                    this._o.onClose.call(this);
-                }
-            }
-        },
-
-        /**
-         * GAME OVER
-         */
-        destroy: function()
-        {
-            var opts = this._o;
-
-            this.hide();
-            removeEvent(this.el, 'mousedown', this._onMouseDown, true);
-            removeEvent(this.el, 'touchend', this._onMouseDown, true);
-            removeEvent(this.el, 'change', this._onChange);
-            if (opts.keyboardInput) {
-                removeEvent(document, 'keydown', this._onKeyChange);
-            }
-            if (opts.field) {
-                removeEvent(opts.field, 'change', this._onInputChange);
-                if (opts.bound) {
-                    removeEvent(opts.trigger, 'click', this._onInputClick);
-                    removeEvent(opts.trigger, 'focus', this._onInputFocus);
-                    removeEvent(opts.trigger, 'blur', this._onInputBlur);
-                }
-            }
-            if (this.el.parentNode) {
-                this.el.parentNode.removeChild(this.el);
-            }
-        }
-
-    };
-
-    return Pikaday;
-}));
-  })();
-});
-
 require.register("process-nextick-args/index.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "process-nextick-args");
   (function() {
@@ -76955,106 +75704,6 @@ module.exports = exports['default'];
   })();
 });
 
-require.register("react-pikaday/lib/Pikaday.js", function(exports, require, module) {
-  require = __makeRelativeRequire(require, {}, "react-pikaday");
-  (function() {
-    'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-var _pikaday = require('pikaday');
-
-var _pikaday2 = _interopRequireDefault(_pikaday);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var ReactPikaday = _react2.default.createClass({
-  displayName: 'ReactPikaday',
-
-
-  propTypes: {
-    value: _react2.default.PropTypes.instanceOf(Date),
-    onChange: _react2.default.PropTypes.func,
-    initialOptions: _react2.default.PropTypes.object,
-
-    valueLink: _react2.default.PropTypes.shape({
-      value: _react2.default.PropTypes.instanceOf(Date),
-      requestChange: _react2.default.PropTypes.func.isRequired
-    })
-  },
-
-  getDefaultProps: function getDefaultProps() {
-    return {
-      initialOptions: {}
-    };
-  },
-
-  getValueLink: function getValueLink(props) {
-    return props.valueLink || {
-      value: props.value,
-      requestChange: props.onChange
-    };
-  },
-
-  setDateIfChanged: function setDateIfChanged(newDate, prevDate) {
-    var newTime = newDate ? newDate.getTime() : null;
-    var prevTime = prevDate ? prevDate.getTime() : null;
-
-    if (newTime !== prevTime) {
-      if (newDate === null) {
-        // Workaround for pikaday not clearing value when date set to falsey
-        this.refs.pikaday.value = '';
-      }
-      this._picker.setDate(newDate, true); // 2nd param = don't call onSelect
-    }
-  },
-
-  // user props to pass down to the underlying DOM node
-  getDomProps: function getDomProps() {
-    var restProps = {};
-    for (var propKey in this.props) {
-      if (this.props.hasOwnProperty(propKey) && !ReactPikaday.propTypes[propKey]) {
-        restProps[propKey] = this.props[propKey];
-      }
-    }
-    return restProps;
-  },
-
-  componentDidMount: function componentDidMount() {
-    var el = this.refs.pikaday;
-
-    this._picker = new _pikaday2.default(_extends({
-      field: el,
-      onSelect: this.getValueLink(this.props).requestChange
-    }, this.props.initialOptions));
-
-    this.setDateIfChanged(this.getValueLink(this.props).value);
-  },
-
-  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-    var newDate = this.getValueLink(nextProps).value;
-    var lastDate = this.getValueLink(this.props).value;
-
-    this.setDateIfChanged(newDate, lastDate);
-  },
-
-  render: function render() {
-    return _react2.default.createElement('input', _extends({ type: 'text', ref: 'pikaday' }, this.getDomProps()));
-  }
-});
-
-exports.default = ReactPikaday;
-  })();
-});
-
 require.register("react-prop-types/lib/all.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "react-prop-types");
   (function() {
@@ -88456,45 +87105,23 @@ exports.default = AddPatientPanel;
 });
 
 require.register("components/patient/PatientProfile.jsx", function(exports, require, module) {
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _moment = require('moment');
+var _moment = require("moment");
 
 var _moment2 = _interopRequireDefault(_moment);
 
-var _Vitals = require('./Profile/Vitals');
-
-var _Vitals2 = _interopRequireDefault(_Vitals);
-
-var _Appointments = require('./Profile/Appointments');
-
-var _Appointments2 = _interopRequireDefault(_Appointments);
-
-var _Notes = require('./Profile/Notes');
-
-var _Notes2 = _interopRequireDefault(_Notes);
-
-var _Info = require('./Profile/Info');
-
-var _Info2 = _interopRequireDefault(_Info);
-
-var _Lab = require('./Profile/Lab');
-
-var _Lab2 = _interopRequireDefault(_Lab);
-
-var _Medicine = require('./Profile/Medicine');
-
-var _Medicine2 = _interopRequireDefault(_Medicine);
+var _profile = require("./profile");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -88505,203 +87132,233 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var PatientsList = function (_Component) {
-    _inherits(PatientsList, _Component);
+	_inherits(PatientsList, _Component);
 
-    function PatientsList(props) {
-        _classCallCheck(this, PatientsList);
+	function PatientsList(props) {
+		_classCallCheck(this, PatientsList);
 
-        var _this = _possibleConstructorReturn(this, (PatientsList.__proto__ || Object.getPrototypeOf(PatientsList)).call(this, props));
+		var _this = _possibleConstructorReturn(this, (PatientsList.__proto__ || Object.getPrototypeOf(PatientsList)).call(this, props));
 
-        _this.state = {
-            active_tab: "notes",
-            selected_diagnosis_option: ""
-        };
-        return _this;
-    }
+		_this.state = {
+			active_tab: "notes",
+			selected_diagnosis_option: ""
+		};
+		return _this;
+	}
 
-    _createClass(PatientsList, [{
-        key: 'componentDidMount',
-        value: function componentDidMount() {
-            this.setState({
-                selected_diagnosis_option: ""
-            });
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            var _this2 = this;
+	_createClass(PatientsList, [{
+		key: "render",
+		value: function render() {
+			var _this2 = this;
 
-            return _react2.default.createElement(
-                'div',
-                { id: 'patients_profile_route', className: 'route_section' },
-                _react2.default.createElement(
-                    'div',
-                    { id: 'patient_tabs_container' },
-                    _react2.default.createElement(
-                        'div',
-                        { id: 'selected_patient_container' },
-                        _react2.default.createElement(
-                            'strong',
-                            null,
-                            'ID:',
-                            this.props.patient[0].id,
-                            '\u2003\u2003',
-                            this.props.patient[0].name,
-                            '\u2003\u2003',
-                            this.props.patient[0].age,
-                            ' y.o'
-                        )
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', onClick: function onClick(e) {
-                                return _this2.set_active_tab("info", e.target);
-                            } },
-                        'Info'
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', onClick: function onClick(e) {
-                                return _this2.set_active_tab("notes", e.target);
-                            } },
-                        'Notes'
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', onClick: function onClick(e) {
-                                return _this2.set_active_tab("vitals", e.target);
-                            } },
-                        'Vitals'
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', onClick: function onClick(e) {
-                                return _this2.set_active_tab("lab", e.target);
-                            } },
-                        'Lab'
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', onClick: function onClick(e) {
-                                return _this2.set_active_tab("medicine", e.target);
-                            } },
-                        'Medicine'
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', onClick: function onClick(e) {
-                                return _this2.set_active_tab("appointments", e.target);
-                            } },
-                        'Appointments'
-                    ),
-                    _react2.default.createElement(
-                        'a',
-                        { className: 'patient_tab', id: 'close_patient_tab', onClick: function onClick(e) {
-                                return _this2.remove_selected_patient();
-                            } },
-                        _react2.default.createElement('i', { className: 'fa fa-window-close-o', 'aria-hidden': 'true' })
-                    )
-                ),
-                this.show_route(this.props)
-            );
-        }
-    }, {
-        key: 'remove_selected_patient',
-        value: function remove_selected_patient() {
-            this.props.remove_selected_patient();
-        }
-    }, {
-        key: 'set_selected_diagnosis_option',
-        value: function set_selected_diagnosis_option(option) {
-            this.setState({ selected_diagnosis_option: option });
-        }
-    }, {
-        key: 'show_route',
-        value: function show_route(props) {
-            if (this.state.active_tab === "notes") {
-                return _react2.default.createElement(_Notes2.default, {
-                    patient: props.patient[0],
-                    add_note: props.add_item,
-                    darken: props.darken });
-            }
+			var selected_patient = this.props.props.selected_patient;
 
-            if (this.state.active_tab === "vitals") {
-                return _react2.default.createElement(_Vitals2.default, {
-                    patient: props.patient[0],
-                    add_vitals: props.add_item });
-            }
+			return _react2.default.createElement(
+				"div",
+				{ id: "patients_profile_route", className: "route_section" },
+				_react2.default.createElement(
+					"div",
+					{ id: "patient_tabs_container" },
+					_react2.default.createElement(
+						"div",
+						{ id: "selected_patient_container" },
+						_react2.default.createElement(
+							"strong",
+							null,
+							"ID:",
+							selected_patient.id,
+							"\u2003\u2003",
+							selected_patient.name,
+							"\u2003\u2003",
+							selected_patient.age,
+							" y.o"
+						)
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							onClick: function onClick(e) {
+								return _this2.set_active_tab("info", e.target);
+							}
+						},
+						"Info"
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							onClick: function onClick(e) {
+								return _this2.set_active_tab("notes", e.target);
+							}
+						},
+						"Notes"
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							onClick: function onClick(e) {
+								return _this2.set_active_tab("vitals", e.target);
+							}
+						},
+						"Vitals"
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							onClick: function onClick(e) {
+								return _this2.set_active_tab("lab", e.target);
+							}
+						},
+						"Lab"
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							onClick: function onClick(e) {
+								return _this2.set_active_tab("medicine", e.target);
+							}
+						},
+						"Medicine"
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							onClick: function onClick(e) {
+								return _this2.set_active_tab("appointments", e.target);
+							}
+						},
+						"Appointments"
+					),
+					_react2.default.createElement(
+						"a",
+						{
+							className: "patient_tab",
+							id: "close_patient_tab",
+							onClick: function onClick(e) {
+								return _this2.remove_selected_patient();
+							}
+						},
+						_react2.default.createElement("i", { className: "fa fa-window-close-o", "aria-hidden": "true" })
+					)
+				),
+				this.show_route(this.props)
+			);
+		}
+	}, {
+		key: "remove_selected_patient",
+		value: function remove_selected_patient() {
+			this.props.actions.remove_selected_patient();
+		}
+	}, {
+		key: "set_selected_diagnosis_option",
+		value: function set_selected_diagnosis_option(option) {
+			this.setState({ selected_diagnosis_option: option });
+		}
+	}, {
+		key: "show_route",
+		value: function show_route(props) {
+			var _props$props = props.props,
+			    selected_patient = _props$props.selected_patient,
+			    lab_list = _props$props.lab_list,
+			    diagnosis_list = _props$props.diagnosis_list,
+			    medicine_dose_list = _props$props.medicine_dose_list,
+			    medicine_list = _props$props.medicine_list;
+			var _props$actions = props.actions,
+			    add_item = _props$actions.add_item,
+			    add_appointment = _props$actions.add_appointment,
+			    add_dropdown_item = _props$actions.add_dropdown_item,
+			    stop_medicine = _props$actions.stop_medicine;
+			var darken = props.darken.darken;
 
-            if (this.state.active_tab === "lab") {
-                return _react2.default.createElement(_Lab2.default, {
-                    add_lab_item: this.props.add_item,
-                    lab_list: this.props.lab_list,
-                    darken: props.darken,
-                    patient: props.patient[0] });
-            }
 
-            if (this.state.active_tab === "info") {
-                return _react2.default.createElement(_Info2.default, {
-                    patient: props.patient[0],
-                    create_diagnosis: this.create_diagnosis.bind(this),
-                    selected_option: this.state.selected_diagnosis_option,
-                    set_selected_option: this.set_selected_diagnosis_option.bind(this),
-                    add_dropdown_item: this.props.add_dropdown_item,
-                    diagnosis_list: props.diagnosis_list });
-            }
+			if (this.state.active_tab === "notes") {
+				return _react2.default.createElement(_profile.Notes, { patient: selected_patient, add_note: add_item, darken: darken });
+			}
 
-            if (this.state.active_tab === "appointments") {
-                return _react2.default.createElement(_Appointments2.default, {
-                    patient: props.patient[0],
-                    add_appointment: props.add_appointment });
-            }
+			if (this.state.active_tab === "vitals") {
+				return _react2.default.createElement(_profile.Vitals, { patient: selected_patient, add_vitals: add_item });
+			}
 
-            if (this.state.active_tab === "medicine") {
-                return _react2.default.createElement(_Medicine2.default, {
-                    stop_medicine: this.props.stop_medicine,
-                    create_diagnosis: this.create_diagnosis.bind(this),
-                    selected_option: this.state.selected_diagnosis_option,
-                    set_selected_option: this.set_selected_diagnosis_option.bind(this),
-                    medicine_dose_list: this.props.medicine_dose_list,
-                    add_dropdown_item: this.props.add_dropdown_item,
-                    medicine_list: this.props.medicine_list,
-                    diagnosis_list: props.diagnosis_list,
-                    patient: props.patient[0],
-                    add_medicine: props.add_item });
-            }
-        }
-    }, {
-        key: 'set_active_tab',
-        value: function set_active_tab(tab, el) {
-            var tabs = document.querySelectorAll(".patient_tab");
+			if (this.state.active_tab === "lab") {
+				return _react2.default.createElement(_profile.Lab, {
+					add_lab_item: add_item,
+					lab_list: lab_list,
+					darken: darken,
+					patient: selected_patient
+				});
+			}
 
-            Array.prototype.map.call(tabs, function (tab) {
-                tab.className = "patient_tab";
-            });
+			if (this.state.active_tab === "info") {
+				return _react2.default.createElement(_profile.Info, {
+					patient: selected_patient,
+					create_diagnosis: this.create_diagnosis.bind(this),
+					selected_option: this.state.selected_diagnosis_option,
+					set_selected_option: this.set_selected_diagnosis_option.bind(this),
+					add_dropdown_item: this.props.add_dropdown_item,
+					diagnosis_list: diagnosis_list
+				});
+			}
 
-            el.className = "patient_tab active_patient_tab";
+			if (this.state.active_tab === "appointments") {
+				return _react2.default.createElement(_profile.Appointments, {
+					patient: selected_patient,
+					add_appointment: add_appointment
+				});
+			}
 
-            this.setState({ active_tab: tab });
-        }
-    }, {
-        key: 'create_diagnosis',
-        value: function create_diagnosis() {
-            var treatment = document.querySelector("#create_diagnosis_treatment");
+			if (this.state.active_tab === "medicine") {
+				return _react2.default.createElement(_profile.Medicine, {
+					stop_medicine: stop_medicine,
+					create_diagnosis: this.create_diagnosis.bind(this),
+					selected_option: this.state.selected_diagnosis_option,
+					set_selected_option: this.set_selected_diagnosis_option.bind(this),
+					medicine_dose_list: medicine_dose_list,
+					add_dropdown_item: add_dropdown_item,
+					medicine_list: medicine_list,
+					diagnosis_list: diagnosis_list,
+					patient: selected_patient,
+					add_medicine: add_item
+				});
+			}
+		}
+	}, {
+		key: "set_active_tab",
+		value: function set_active_tab(tab, el) {
+			var tabs = document.querySelectorAll(".patient_tab");
 
-            if (treatment && this.state.selected_diagnosis_option) {
-                var diagnosis_bj = {
-                    "date": (0, _moment2.default)().format("MMM Do YYYY"),
-                    "diagnosis": this.state.selected_diagnosis_option,
-                    "treatment": treatment.value
-                };
+			Array.prototype.map.call(tabs, function (tab) {
+				tab.className = "patient_tab";
+			});
 
-                treatment.value = "";
-                this.setState({ selected_diagnosis_option: "" });
-                this.props.add_item(diagnosis_bj, this.props.patient[0], "diagnosis");
-            }
-        }
-    }]);
+			el.className = "patient_tab active_patient_tab";
 
-    return PatientsList;
+			this.setState({ active_tab: tab });
+		}
+	}, {
+		key: "create_diagnosis",
+		value: function create_diagnosis() {
+			var treatment = document.querySelector("#create_diagnosis_treatment");
+
+			if (treatment && this.state.selected_diagnosis_option) {
+				var diagnosis_bj = {
+					date: (0, _moment2.default)().format("MMM Do YYYY"),
+					diagnosis: this.state.selected_diagnosis_option,
+					treatment: treatment.value
+				};
+
+				treatment.value = "";
+				this.setState({ selected_diagnosis_option: "" });
+				this.props.add_item(diagnosis_bj, this.props.patient[0], "diagnosis");
+			}
+		}
+	}]);
+
+	return PatientsList;
 }(_react.Component);
 
 exports.default = PatientsList;
@@ -88796,7 +87453,152 @@ var PatientsList = function (_Component) {
 exports.default = PatientsList;
 });
 
-require.register("components/patient/Profile/AddLabDetailsPanel.jsx", function(exports, require, module) {
+require.register("components/patient/actions.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.add_patient = add_patient;
+exports.add_appointment = add_appointment;
+exports.add_dropdown_item = add_dropdown_item;
+exports.stop_medicine = stop_medicine;
+exports.remove_selected_patient = remove_selected_patient;
+exports.show_patient_profile = show_patient_profile;
+exports.add_item = add_item;
+function add_patient(patient, patients) {
+	if (patient.name && patient.date && patient.gender && patient.address) {
+		var updated_patients = patients.slice(),
+		    birth = patient.date.split("-"),
+		    reversed_birth = birth.reverse().join("-"),
+		    date1 = new Date(),
+		    date2 = new Date(patient.date),
+		    time_diff = Math.abs(date2.getTime() - date1.getTime()),
+		    diff_years = Math.ceil(time_diff / (1000 * 3600 * 24) / 365),
+		    new_patient = {
+			name: patient.name,
+			birth: reversed_birth,
+			gender: patient.gender,
+			id: Math.floor(Math.random() * (999999 - 100000)) + 100000,
+			age: diff_years,
+			gravida: patient.gravida,
+			hypertension: patient.hypertension,
+			diabetes: patient.diabetes,
+			phone: patient.phone,
+			smoker: patient.smoker,
+			address: patient.address,
+			notes: [],
+			lab: [],
+			appointments: [],
+			vitals: [],
+			medicine: [],
+			diagnosis: []
+		};
+
+		updated_patients.unshift(new_patient);
+
+		return {
+			type: "ADD_PATIENT",
+			payload: { patients: updated_patients }
+		};
+	}
+}
+
+function add_appointment(appointment, patient) {
+	var _this = this;
+
+	var patients = this.state.patients.slice(),
+	    selected_patient = void 0,
+	    appointments = [];
+
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === patient) {
+			selected_patient = patients[i];
+			patients[i].appointments.unshift(appointment);
+		}
+	}
+
+	this.state.patients.map(function (patient) {
+		patient.appointments.map(function (apt) {
+			appointments.push(apt);
+		});
+	});
+
+	this.setState({
+		patients: patients,
+		events: appointments,
+		selected_patient: selected_patient
+	});
+
+	setTimeout(function () {
+		return _this.send_post_req();
+	}, 2000);
+}
+
+function add_dropdown_item(item, category) {
+	var _this2 = this;
+
+	var new_items = this.state[category].slice();
+	new_items.push(item);
+
+	if (category === "diagnosis_list") {
+		this.setState({ diagnosis_list: new_items });
+	}
+	if (category === "medicine_list") {
+		this.setState({ medicine_list: new_items });
+	}
+
+	if (category === "medicine_dose_list") {
+		this.setState({ medicine_dose_list: new_items });
+	}
+
+	setTimeout(function () {
+		return _this2.send_post_req();
+	}, 2000);
+}
+
+function stop_medicine(patient, medicine) {
+	var updated_patient = patient;
+	var index = updated_patient.medicine.indexOf(medicine);
+	updated_patient.medicine[index].active = false;
+
+	return {
+		type: "STOP_MEDICINE",
+		payload: { updated_patient: updated_patient }
+	};
+}
+
+function remove_selected_patient() {
+	this.setState({ selected_patient: null });
+}
+
+function show_patient_profile(patient) {
+	return {
+		type: "SELECTED_PATIENT",
+		payload: { selected_patient: patient }
+	};
+}
+
+function add_item(item, patient, property) {
+	var _this3 = this;
+
+	var patients = this.state.patients.slice();
+
+	for (var i = 0; i < patients.length; i++) {
+		if (patients[i].name === patient.name) {
+			patients[i][property].unshift(item);
+		}
+	}
+
+	this.setState({ patients: patients });
+
+	setTimeout(function () {
+		return _this3.send_post_req();
+	}, 2000);
+}
+});
+
+;require.register("components/patient/profile/AddLabDetailsPanel.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -88915,7 +87717,7 @@ var AddLabDetailsPanel = function (_Component) {
 exports.default = AddLabDetailsPanel;
 });
 
-require.register("components/patient/Profile/AddLabModule.jsx", function(exports, require, module) {
+require.register("components/patient/profile/AddLabModule.jsx", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -88975,7 +87777,7 @@ var AddLabModule = function (_Component) {
 exports.default = AddLabModule;
 });
 
-require.register("components/patient/Profile/AddNote.jsx", function(exports, require, module) {
+require.register("components/patient/profile/AddNote.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -89125,7 +87927,7 @@ var AddNote = function (_Component) {
 exports.default = AddNote;
 });
 
-require.register("components/patient/Profile/Appointments.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Appointments.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -89339,7 +88141,7 @@ var Appointments = function (_Component) {
 exports.default = Appointments;
 });
 
-require.register("components/patient/Profile/Diagnosis.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Diagnosis.jsx", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -89444,7 +88246,7 @@ var Diagnosis = function (_Component) {
 exports.default = Diagnosis;
 });
 
-require.register("components/patient/Profile/Info.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Info.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -89616,7 +88418,7 @@ var Info = function (_Component) {
 exports.default = Info;
 });
 
-require.register("components/patient/Profile/Lab.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Lab.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -89843,7 +88645,7 @@ var Lab = function (_Component) {
 exports.default = Lab;
 });
 
-require.register("components/patient/Profile/Medicine.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Medicine.jsx", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -90015,7 +88817,7 @@ var Medicine = function (_Component) {
 				"div",
 				{ id: "medicine_list_container" },
 				this.props.patient.medicine.map(function (medicine, x) {
-					return (0, _moment2.default)(medicine.end) > (0, _moment2.default)() && !medicine.stopped ? _react2.default.createElement(
+					return (0, _moment2.default)(medicine.end) > (0, _moment2.default)() && medicine.active ? _react2.default.createElement(
 						"div",
 						{ key: x, id: "medicine" },
 						_react2.default.createElement(
@@ -90064,7 +88866,7 @@ var Medicine = function (_Component) {
 				"div",
 				{ id: "medicine_list_container" },
 				this.props.patient.medicine.map(function (medicine, x) {
-					return (0, _moment2.default)(medicine.end) < (0, _moment2.default)() || medicine.stopped ? _react2.default.createElement(
+					return (0, _moment2.default)(medicine.end) < (0, _moment2.default)() || !medicine.active ? _react2.default.createElement(
 						"div",
 						{ key: x, id: "medicine" },
 						_react2.default.createElement(
@@ -90095,7 +88897,7 @@ var Medicine = function (_Component) {
 						_react2.default.createElement(
 							"h4",
 							null,
-							medicine.stopped
+							medicine.active
 						)
 					) : "";
 				})
@@ -90151,7 +88953,7 @@ var Medicine = function (_Component) {
 exports.default = Medicine;
 });
 
-require.register("components/patient/Profile/Notes.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Notes.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -90310,7 +89112,7 @@ var Notes = function (_Component) {
 exports.default = Notes;
 });
 
-require.register("components/patient/Profile/Vitals.jsx", function(exports, require, module) {
+require.register("components/patient/profile/Vitals.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -90541,164 +89343,71 @@ var Vitals = function (_Component) {
 exports.default = Vitals;
 });
 
-require.register("components/patient/actions.js", function(exports, require, module) {
+require.register("components/patient/profile/index.js", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.add_patient = add_patient;
-exports.add_appointment = add_appointment;
-exports.add_dropdown_item = add_dropdown_item;
-exports.stop_medicine = stop_medicine;
-exports.remove_selected_patient = remove_selected_patient;
-exports.show_patient_profile = show_patient_profile;
-exports.add_item = add_item;
-function add_patient(patient, patients) {
-	if (patient.name && patient.date && patient.gender && patient.address) {
-		var updated_patients = patients.slice(),
-		    birth = patient.date.split("-"),
-		    reversed_birth = birth.reverse().join("-"),
-		    date1 = new Date(),
-		    date2 = new Date(patient.date),
-		    time_diff = Math.abs(date2.getTime() - date1.getTime()),
-		    diff_years = Math.ceil(time_diff / (1000 * 3600 * 24) / 365),
-		    new_patient = {
-			name: patient.name,
-			birth: reversed_birth,
-			gender: patient.gender,
-			id: Math.floor(Math.random() * (999999 - 100000)) + 100000,
-			age: diff_years,
-			gravida: patient.gravida,
-			hypertension: patient.hypertension,
-			diabetes: patient.diabetes,
-			phone: patient.phone,
-			smoker: patient.smoker,
-			address: patient.address,
-			notes: [],
-			lab: [],
-			appointments: [],
-			vitals: [],
-			medicine: [],
-			diagnosis: []
-		};
-
-		updated_patients.unshift(new_patient);
-
-		return {
-			type: "ADD_PATIENT",
-			payload: { patients: updated_patients }
-		};
-	}
-}
-
-function add_appointment(appointment, patient) {
-	var _this = this;
-
-	var patients = this.state.patients.slice(),
-	    selected_patient = void 0,
-	    appointments = [];
-
-	for (var i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient) {
-			selected_patient = patients[i];
-			patients[i].appointments.unshift(appointment);
-		}
-	}
-
-	this.state.patients.map(function (patient) {
-		patient.appointments.map(function (apt) {
-			appointments.push(apt);
-		});
-	});
-
-	this.setState({
-		patients: patients,
-		events: appointments,
-		selected_patient: [selected_patient]
-	});
-
-	setTimeout(function () {
-		return _this.send_post_req();
-	}, 2000);
-}
-
-function add_dropdown_item(item, category) {
-	var _this2 = this;
-
-	var new_items = this.state[category].slice();
-	new_items.push(item);
-
-	if (category === "diagnosis_list") {
-		this.setState({ diagnosis_list: new_items });
-	}
-	if (category === "medicine_list") {
-		this.setState({ medicine_list: new_items });
-	}
-
-	if (category === "medicine_dose_list") {
-		this.setState({ medicine_dose_list: new_items });
-	}
-
-	setTimeout(function () {
-		return _this2.send_post_req();
-	}, 2000);
-}
-
-function stop_medicine(patient, medicine) {
-	var _this3 = this;
-
-	var patients = this.state.patients.slice();
-
-	for (var i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient.name) {
-			for (var j = 0; j < patients[i].medicine.length; j++) {
-				if (patients[i].medicine[j] === medicine) {
-					patients[i].medicine[j]["stopped"] = "stopped";
-					break;
-				}
-			}
-		}
-	}
-
-	this.setState({ patients: patients });
-
-	setTimeout(function () {
-		return _this3.send_post_req();
-	}, 2000);
-}
-
-function remove_selected_patient() {
-	this.setState({ selected_patient: [] });
-}
-
-function show_patient_profile(patient) {
-	return {
-		type: "SELECTED_PATIENT",
-		payload: { selected_patient: [patient] }
-	};
-}
-
-function add_item(item, patient, property) {
-	var _this4 = this;
-
-	var patients = this.state.patients.slice();
-
-	for (var i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient.name) {
-			patients[i][property].unshift(item);
-		}
-	}
-
-	this.setState({ patients: patients });
-
-	setTimeout(function () {
-		return _this4.send_post_req();
-	}, 2000);
-}
+  value: true
 });
 
-;require.register("components/util/BookPanel.jsx", function(exports, require, module) {
+var _Vitals = require("./Vitals.jsx");
+
+Object.defineProperty(exports, "Vitals", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Vitals).default;
+  }
+});
+
+var _Appointments = require("./Appointments.jsx");
+
+Object.defineProperty(exports, "Appointments", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Appointments).default;
+  }
+});
+
+var _Notes = require("./Notes.jsx");
+
+Object.defineProperty(exports, "Notes", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Notes).default;
+  }
+});
+
+var _Info = require("./Info.jsx");
+
+Object.defineProperty(exports, "Info", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Info).default;
+  }
+});
+
+var _Lab = require("./Lab.jsx");
+
+Object.defineProperty(exports, "Lab", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Lab).default;
+  }
+});
+
+var _Medicine = require("./Medicine.jsx");
+
+Object.defineProperty(exports, "Medicine", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Medicine).default;
+  }
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+});
+
+require.register("components/util/BookPanel.jsx", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -91346,18 +90055,16 @@ var PatientsContainer = function (_Component) {
 			var searched_patients = state.searched_patients;
 
 
-			if (selected_patient) {
-				return selected_patient.length > 0 ? _react2.default.createElement(_PatientProfile2.default, {
-					actions: boundActionCreators,
-					props: props,
-					darken: _methods.darken
-				}) : _react2.default.createElement(_PatientsList2.default, {
-					patients: patients,
-					searched_patients: searched_patients,
-					render_patients: this.render_patients.bind(this),
-					search_patient: this.search_patient.bind(this)
-				});
-			}
+			return selected_patient ? _react2.default.createElement(_PatientProfile2.default, {
+				actions: boundActionCreators,
+				props: props,
+				darken: _methods.darken
+			}) : _react2.default.createElement(_PatientsList2.default, {
+				patients: patients,
+				searched_patients: searched_patients,
+				render_patients: this.render_patients.bind(this),
+				search_patient: this.search_patient.bind(this)
+			});
 		}
 	}, {
 		key: "toggle_patient_panel",
@@ -91672,7 +90379,7 @@ exports.default = function () {
 					password: data.password,
 					lab_list: lab_data,
 					patients: data.patients,
-					selected_patient: [],
+					selected_patient: null,
 					diagnosis_list: data.diagnosis_list,
 					medicine_list: data.medicine_list,
 					medicine_dose_list: data.medicine_dose_list,
@@ -91684,6 +90391,15 @@ exports.default = function () {
 			return (0, _util.new_state)(state, action.payload);
 		case "SELECTED_PATIENT":
 			return (0, _util.new_state)(state, action.payload);
+		case "STOP_MEDICINE":
+			var patients = state.patients;
+			var updated_patient = action.payload.updated_patient;
+
+
+			return {
+				...state,
+				patients: (0, _util.update_patients)(patients, updated_patient)
+			};
 		default:
 			return state;
 	}
@@ -91699,6 +90415,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.new_state = new_state;
 exports.init_calendar_events = init_calendar_events;
 exports.send_post_req = send_post_req;
+exports.update_patients = update_patients;
 function new_state(state, payload) {
 	return {
 		...state,
@@ -91728,6 +90445,17 @@ function send_post_req(demo) {
 			console.log("data inserted");
 		});
 	}
+}
+
+function update_patients(patients, updated_patient) {
+	var patient_index = patients.map(function (x) {
+		return x.id;
+	}).indexOf(updated_patient.id);
+
+	var updated_patients = patients.slice();
+	update_patients[patient_index] = updated_patient;
+
+	return updated_patients;
 }
 
 /* export function store_in_ls(user_data, lab_data) {
@@ -91796,7 +90524,6 @@ require.alias("immutable/dist/immutable.js", "immutable");
 require.alias("inherits/inherits_browser.js", "inherits");
 require.alias("invariant/browser.js", "invariant");
 require.alias("moment/moment.js", "moment");
-require.alias("pikaday/pikaday.js", "pikaday");
 require.alias("process/browser.js", "process");
 require.alias("react/react.js", "react");
 require.alias("react-big-calendar/lib/index.js", "react-big-calendar");
@@ -91806,7 +90533,6 @@ require.alias("react-dnd-html5-backend/lib/index.js", "react-dnd-html5-backend")
 require.alias("react-draft-wysiwyg/dist/react-draft-wysiwyg.js", "react-draft-wysiwyg");
 require.alias("react-html-parser/lib/index.js", "react-html-parser");
 require.alias("react-onclickoutside/dist/react-onclickoutside.cjs.js", "react-onclickoutside");
-require.alias("react-pikaday/lib/Pikaday.js", "react-pikaday");
 require.alias("react-redux/lib/index.js", "react-redux");
 require.alias("react-router-dom/node_modules/warning/warning.js", "react-router-dom/node_modules/warning");
 require.alias("react-router/node_modules/warning/warning.js", "react-router/node_modules/warning");
