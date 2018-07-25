@@ -1,5 +1,4 @@
 * {
-	font-family: "Consolas";
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -9,39 +8,50 @@
 html,
 body,
 #app,
-#content,
-#route_container {
+#router {
 	height: 100%;
 	position: relative;
 }
 
-.route_tab {
-	line-height: 2.5;
-	padding: 1rem 3rem;
-	text-decoration: none;
-	font-size: 1.5rem;
-	color: black;
-}
-
-#patient_route_tab,
-#patients_route,
-#patients_profile_route {
-	background: powderblue;
-}
-
-#calendar_route_tab,
-#appointments_route {
+body {
 	background: floralwhite;
 }
 
-.route_tab:nth-child(3),
-#settings_route {
-	background: lightgray;
+nav {
+	height: 4rem;
+	border: 1px solid black;
+	padding: 0 1rem;
+	position: relative;
+	background-color: #4c4c4c;
+	color: floralwhite;
 }
 
-.route_section {
-	padding: 0 1rem;
-	height: 92%;
+nav .tab {
+	float: left;
+	width: 6rem;
+	height: 100%;
+	font-size: 2rem;
+	padding: 0.7rem;
+	color: floralwhite;
+}
+
+nav #logout {
+	float: right;
+	font-size: 2.5rem;
+	padding: 0.5rem;
+	cursor: pointer;
+}
+
+nav #logged_in_info {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	font-size: 1.5rem;
+	transform: translate(-50%, -50%);
+}
+
+.route_view {
+	padding: 0.7rem;
 	position: relative;
 }
 
@@ -56,11 +66,4 @@ body,
 
 .darken_show {
 	visibility: visible !important;
-}
-
-#logout {
-	height: 3.7rem;
-	vertical-align: top;
-	width: 6rem;
-	float: right;
 }

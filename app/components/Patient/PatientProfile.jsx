@@ -14,7 +14,7 @@ export default class PatientsList extends Component {
 	render() {
 		const { selected_patient } = this.props.props;
 		return (
-			<div id="patients_profile_route" className="route_section">
+			<div className="patients_route">
 				<div id="patient_tabs_container">
 					<div id="selected_patient_container">
 						<strong>
@@ -24,6 +24,12 @@ export default class PatientsList extends Component {
 							&emsp;&emsp;
 							{selected_patient.age} y.o
 						</strong>
+						<a
+							id="close_patient_tab"
+							onClick={e => this.remove_selected_patient()}
+						>
+							<i className="fa fa-window-close-o" aria-hidden="true" />
+						</a>
 					</div>
 
 					<a
@@ -61,13 +67,6 @@ export default class PatientsList extends Component {
 						onClick={e => this.set_active_tab("appointments", e.target)}
 					>
 						Appointments
-					</a>
-					<a
-						className="patient_tab"
-						id="close_patient_tab"
-						onClick={e => this.remove_selected_patient()}
-					>
-						<i className="fa fa-window-close-o" aria-hidden="true" />
 					</a>
 				</div>
 				{this.show_route(this.props)}

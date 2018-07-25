@@ -37,14 +37,7 @@ class PatientsContainer extends Component {
 			} = this.props;
 
 		return (
-			<div className="route_section" id="patients_route">
-				<button
-					id="add_patient_btn"
-					onClick={() => this.toggle_patient_panel()}
-				>
-					<i className="fa fa-user-plus" aria-hidden="true" />
-				</button>
-
+			<div className="route_view">
 				{this.state.show_add_patient_panel ? (
 					<AddPatientPanel
 						add_patient={this.boundActionCreators.add_patient}
@@ -77,6 +70,7 @@ class PatientsContainer extends Component {
 				searched_patients={searched_patients}
 				render_patients={this.render_patients.bind(this)}
 				search_patient={this.search_patient.bind(this)}
+				toggle_patient_panel={this.toggle_patient_panel.bind(this)}
 			/>
 		);
 	}

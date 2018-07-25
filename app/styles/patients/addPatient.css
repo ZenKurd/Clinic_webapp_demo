@@ -10,16 +10,12 @@
 #add_patient_btn {
 	position: absolute;
 	right: 1rem;
-	font-size: 3rem;
-	top: 1rem;
+	font-size: 2.5rem;
+	top: 0.5rem;
 	cursor: pointer;
 	background: transparent;
 	border: none;
 	outline: none;
-}
-
-#add_patient_btn:hover {
-	color: green;
 }
 
 #close_patient_panel_btn {

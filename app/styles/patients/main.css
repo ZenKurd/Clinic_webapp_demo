@@ -1,134 +1,128 @@
-#patients_route h3 {
-  display: inline-block;
-  width: 10rem;
-  margin-left: 0.3rem;
+.patients_route {
+	height: 100%;
+	overflow: auto;
+}
+
+.patient_profile_route {
+	padding-top: 1rem;
+	height: 87%;
+	position: relative;
+}
+
+#patients_list_container {
+}
+
+#patients_list_container h3 {
+	display: inline-block;
+	width: 10rem;
+	margin-left: 0.3rem;
 }
 
 .patients_list {
-  border: 1px solid black;
+	border: 1px solid black;
 }
 
 #selected_patient_container {
-  width: 100%;
-  height: 3rem;
-  line-height: 3rem;
-  padding-left: 1rem;
-  font-size: 1.2rem;
-  background: floralwhite;
-  border: 1px solid black;
+	width: 100%;
+	height: 3rem;
+	line-height: 3rem;
+	padding: 0 0.5rem 0 1rem;
+	font-size: 1.2rem;
+	background: floralwhite;
+	border: 1px solid black;
 }
 
 .patient {
-  color: black;
-  background: floralwhite;
-  line-height: 2rem;
-  border-bottom: 1px solid black;
-  padding: 0.5rem;
-  font-weight: bold;
+	color: #4c4c4c;
+	line-height: 2rem;
+	border-bottom: 1px solid black;
+	padding: 0.5rem;
+	font-weight: bold;
 }
 
 .patient:hover {
-  cursor: pointer;
-  background: rgb(253, 232, 191);
+	cursor: pointer;
+	background: rgb(253, 232, 191);
 }
 
 .patient span {
-  width: 10rem;
-  display: inline-block;
+	width: 10rem;
+	display: inline-block;
 }
 
 #search_patient_input {
-  display: block;
-  height: 2rem;
-  outline: none;
-  font-size: 1.3rem;
-  text-align: center;
-  width: 15rem;
-  margin-bottom: 2rem;
-  background: none;
-  border: none;
-  border-bottom: 1px solid black;
-  transition: 300ms ease;
+	display: block;
+	height: 2rem;
+	outline: none;
+	font-size: 1.3rem;
+	text-align: center;
+	width: 15rem;
+	margin-bottom: 2rem;
+	background: none;
+	border: none;
+	border-bottom: 1px solid black;
+	transition: 300ms ease;
 }
 
 #search_patient_input:focus {
-  width: 30rem;
-  transition: 300ms ease;
-}
-
-#patients_container {
-}
-
-#patients_profile_route {
-  padding: 0;
+	width: 30rem;
+	transition: 300ms ease;
 }
 
 #patient_tabs_container {
 }
 
 .patient_tab {
-  display: inline-block;
-  padding: 1rem;
-  font-size: 1.3rem;
-  border-left: 1px solid black;
-  border-bottom: 1px solid black;
+	display: inline-block;
+	padding: 1rem;
+	font-size: 1.3rem;
+	border-left: 1px solid black;
+	border-bottom: 1px solid black;
 }
 
 .active_patient_tab {
-  background: floralwhite;
+	background: #4c4c4c;
+	color: floralwhite;
 }
 
 .patient_tab:hover {
-  cursor: pointer;
-  background: floralwhite;
-}
-
-.patient_profile_route {
-  padding-top: 2rem;
-  height: 90%;
-  position: relative;
+	cursor: pointer;
+	background: #4c4c4c;
+	color: floralwhite;
 }
 
 #patients_info_container {
-  display: inline-block;
-  padding: 1rem;
-  background: floralwhite;
-  border: 1px solid black;
+	display: inline-block;
+	padding: 1rem;
+	background: #eaeaea;
+	color: #4c4c4c;
+	border: 1px solid black;
 }
 
 #patients_info_container p {
-  display: block;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+	display: block;
+	font-size: 1.2rem;
+	margin-bottom: 1rem;
 }
 
 #patients_info_container u {
-  font-weight: 600;
-  text-decoration: none;
+	font-weight: 600;
+	text-decoration: none;
 }
 
 #close_patient_tab {
-  border: 0;
-  padding: 0;
-  font-size: 2.5rem;
-  position: absolute;
-  top: 0.1rem;
-  right: 0.3rem;
+	font-size: 2.5rem;
+	float: right;
+	cursor: pointer;
+	color: #4c4c4c;
 }
 
 #close_patient_tab:hover {
-  background: none;
-  color: red;
+	background: none;
+	color: red;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-}
-
-#logged_in_info {
-  background: #bde6b8;
-  padding: 1.25rem 1rem;
-  vertical-align: top;
-  float: right;
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
 }

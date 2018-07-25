@@ -27,7 +27,6 @@ To run the app locally in dev mode:
 
 todo:
 
-- implement redux
 - refactor everything
 - mobile design
 - improve input validation

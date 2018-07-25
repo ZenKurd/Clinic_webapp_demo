@@ -23,7 +23,7 @@ class Appointments extends Component {
 
 	render() {
 		return (
-			<div className="route_section" id="appointments_route">
+			<div className="route_view" id="appointments_route">
 				{this.state.show_book_panel ? (
 					<BookPanel
 						history={this.props.history}

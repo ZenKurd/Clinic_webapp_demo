@@ -1,5 +1,5 @@
 let data = {
-	username: "demo_user",
+	username: "demo",
 	_id: 1,
 	email: "demo@demo.demo",
 	password: "demo",
