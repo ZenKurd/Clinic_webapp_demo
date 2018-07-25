@@ -27,11 +27,4 @@ To run the app locally in dev mode:
 
 todo:
 
-- refactor everything
-- mobile design
-- improve input validation
-- improve medicine box
-- layout on lab panel
-- better code structure overall
-- improve data structure (server + client)
-- improve account system
+- mobile responsive

@@ -128,7 +128,7 @@ class PatientsContainer extends Component {
 
 		return (
 			<div className="patients_list">
-				{patients.map((patient, x) => (
+				{(patients || []).map((patient, x) => (
 					<div
 						key={x}
 						className="patient"
