@@ -4,7 +4,8 @@ import {
 	update_patients,
 	move_appointment,
 	add_appointment,
-	find_patient
+	find_patient,
+	add_dropdown_item
 } from "./util.js";
 
 const init_state = {};
@@ -27,6 +28,10 @@ export default (state = init_state, action) => {
 				medicine_dose_list: data.medicine_dose_list,
 				events: update_calendar_events(data.patients)
 			};
+		}
+		case "ADD_DROPDOWN_ITEM": {
+			const { item, category } = action.payload;
+			return add_dropdown_item(state, item, category);
 		}
 
 		case "ADD_PATIENT":

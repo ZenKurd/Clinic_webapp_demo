@@ -64,21 +64,13 @@ export function add_appointment(appointment, patient) {
 }
 
 export function add_dropdown_item(item, category) {
-	let new_items = this.state[category].slice();
-	new_items.push(item);
-
-	if (category === "diagnosis_list") {
-		this.setState({ diagnosis_list: new_items });
-	}
-	if (category === "medicine_list") {
-		this.setState({ medicine_list: new_items });
-	}
-
-	if (category === "medicine_dose_list") {
-		this.setState({ medicine_dose_list: new_items });
-	}
-
-	setTimeout(() => this.send_post_req(), 2000);
+	return {
+		type: "ADD_DROPDOWN_ITEM",
+		payload: {
+			item,
+			category
+		}
+	};
 }
 
 export function stop_medicine(patient, medicine) {

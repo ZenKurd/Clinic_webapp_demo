@@ -52,6 +52,8 @@ nav #logged_in_info {
 
 .route_view {
 	position: relative;
+	height: 92%;
+	overflow: hidden;
 }
 
 .darken {

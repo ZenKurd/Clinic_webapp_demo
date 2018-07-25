@@ -112,3 +112,16 @@ export function find_patient(state, patient_name) {
 
 	return patient;
 }
+
+export function add_dropdown_item(state, item, category) {
+	let updated_category = state[category].slice(0);
+	updated_category.push(item);
+
+	let obj = {};
+	obj[category] = updated_category;
+
+	return {
+		...state,
+		...obj
+	};
+}
