@@ -7,6 +7,12 @@ import HTML5Backend from "react-dnd-html5-backend";
 import { DragDropContext } from "react-dnd";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { connect } from "react-redux";
+import {
+	darken,
+	add_appointment,
+	navigate,
+	move_appointment
+} from "../methods";
 
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
 const DragAndDropCalendar = withDragAndDrop(BigCalendar);
@@ -22,6 +28,7 @@ class Appointments extends Component {
 	}
 
 	render() {
+		const { patients, events, dispatch } = this.props;
 		return (
 			<div className="route_view" id="appointments_route">
 				{this.state.show_book_panel ? (
@@ -29,8 +36,9 @@ class Appointments extends Component {
 						history={this.props.history}
 						selected_slot={this.state.selected_slot}
 						close_book_panel={this.close_book_panel.bind(this)}
-						patients={this.props.patients}
-						add_appointment={this.props.add_appointment}
+						patients={patients}
+						add_appointment={add_appointment}
+						dispatch={dispatch}
 					/>
 				) : (
 					""
@@ -39,7 +47,7 @@ class Appointments extends Component {
 				<DragAndDropCalendar
 					onEventDrop={this.moveEvent.bind(this)}
 					selectable
-					events={this.props.events}
+					events={events}
 					step={15}
 					timeslots={2}
 					min={this.get_min_time()}
@@ -56,12 +64,12 @@ class Appointments extends Component {
 		);
 	}
 	moveEvent({ event, start, end }) {
-		this.props.move_appointment(event, start, end);
+		move_appointment(event, start, end, this.props.dispatch);
 	}
 
 	navigate_to_patient(event) {
 		this.props.history.push("/patients");
-		this.props.navigate(event.title);
+		navigate(event.title);
 	}
 
 	book_slot(slot_info) {
@@ -69,11 +77,11 @@ class Appointments extends Component {
 			show_book_panel: true,
 			selected_slot: slot_info
 		});
-		this.props.darken();
+		darken();
 	}
 
 	close_book_panel() {
-		this.props.darken();
+		darken();
 		this.setState({ show_book_panel: false });
 	}
 
@@ -87,11 +95,6 @@ class Appointments extends Component {
 		return time;
 	}
 }
-
-/* move_appointment={this.move_appointment.bind(this)}
-navigate={this.navigate.bind(this)}
-add_appointment={this.add_appointment.bind(this)}
-darken={this.darken.bind(this)} */
 
 const mapStateToProps = state => {
 	return {

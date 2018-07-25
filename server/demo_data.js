@@ -1,3 +1,6 @@
+let moment = require("moment");
+let today = moment().format("MMMM DD, YYYY");
+
 let data = {
 	username: "demo",
 	_id: 1,
@@ -259,14 +262,14 @@ let data = {
 			appointments: [
 				{
 					title: "Johnny",
-					start: new Date("September 07, 2017 11:13:00"),
-					end: new Date("September 07, 2017 12:13:00"),
+					start: new Date(`${today} 11:13:00`),
+					end: new Date(`${today} 12:13:00`),
 					desc: "someone"
 				},
 				{
 					title: "Johnny",
-					start: new Date("September 08, 2017 11:13:00"),
-					end: new Date("September 08, 2017 12:13:00"),
+					start: new Date(`${today} 13:13:00`),
+					end: new Date(`${today} 14:13:00`),
 					desc: "someone"
 				}
 			]
@@ -447,14 +450,14 @@ let data = {
 			appointments: [
 				{
 					title: "Max",
-					start: new Date("September 07, 2017 10:13:00"),
-					end: new Date("September 07, 2017 11:13:00"),
+					start: new Date(`${today} 15:13:00`),
+					end: new Date(`${today} 16:13:00`),
 					desc: "  someone"
 				},
 				{
 					title: "Max",
-					start: new Date("September 07, 2017 09:13:00"),
-					end: new Date("September 07, 2017 10:13:00"),
+					start: new Date(`${today} 08:13:00`),
+					end: new Date(`${today} 09:13:00`),
 					desc: "  someone"
 				}
 			]
@@ -635,14 +638,14 @@ let data = {
 			appointments: [
 				{
 					title: "Tyler",
-					start: new Date("September 06, 2017 11:13:00"),
-					end: new Date("September 06, 2017 12:13:00"),
+					start: new Date(`${today} 11:13:00`),
+					end: new Date(`${today} 11:33:00`),
 					desc: "  someone"
 				},
 				{
 					title: "Tyler",
-					start: new Date("September 06, 2017 14:13:00"),
-					end: new Date("September 06, 2017 15:13:00"),
+					start: new Date(`${today} 09:13:00`),
+					end: new Date(`${today} 10:05:00`),
 					desc: "  someone"
 				}
 			]
@@ -823,14 +826,14 @@ let data = {
 			appointments: [
 				{
 					title: "Julien",
-					start: new Date("September 08, 2017 11:13:00"),
-					end: new Date("September 08, 2017 12:13:00"),
+					start: new Date(`${today} 17:13:00`),
+					end: new Date(`${today} 18:13:00`),
 					desc: "  someone"
 				},
 				{
 					title: "Julien",
-					start: new Date("September 08, 2017 11:13:00"),
-					end: new Date("September 08,2017 14:13:00"),
+					start: new Date(`${today} 14:13:00`),
+					end: new Date(`${today} 14:40:00`),
 					desc: "  someone"
 				}
 			]

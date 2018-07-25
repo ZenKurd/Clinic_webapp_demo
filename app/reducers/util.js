@@ -5,7 +5,7 @@ export function new_state(state, payload) {
 	};
 }
 
-export function init_calendar_events(patients) {
+export function update_calendar_events(patients) {
 	let appointments = [];
 
 	patients.map(patient => {
@@ -29,8 +29,9 @@ export function send_post_req(demo) {
 	}
 }
 
-export function update_patients(state, updated_patient) {
-	var patient_index = state.patients
+export function update_patients(state, updated_patient, flag) {
+	//if flag is set to true, return state, else return updated patients only
+	let patient_index = state.patients
 		.map(x => {
 			return x.id;
 		})
@@ -39,17 +40,35 @@ export function update_patients(state, updated_patient) {
 	let updated_patients = state.patients.slice();
 	update_patients[patient_index] = updated_patient;
 
+	if (flag) {
+		return {
+			...state,
+			patients: updated_patients
+		};
+	} else {
+		return updated_patients;
+	}
+}
+
+export function update_patient(state, patient_name, type, data) {
+	let patient_index = state.patients
+		.map(x => {
+			return x.name;
+		})
+		.indexOf(patient_name);
+	let cloned_patients_list = state.patients.slice();
+	let patient = cloned_patients_list[patient_index];
+
+	if (type == "appointment") {
+		patient.appointments.push(data);
+		return patient;
+	}
+}
+
+export function move_appointment(state, appointment, event) {
+	console.log(appointment, event);
+
 	return {
-		...state,
-		patients: updated_patients
+		...state
 	};
 }
-
-/* export function store_in_ls(user_data, lab_data) {
-	let key;
-	if (user_data.username == "demo_user") key = "demo_";
-
-	localStorage.setItem(key + "user_data", JSON.stringify(user_data));
-	localStorage.setItem(key + "lab_data", JSON.stringify(lab_data));
-}
- */

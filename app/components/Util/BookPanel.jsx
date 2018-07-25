@@ -81,10 +81,15 @@ class BookPanel extends Component {
 			};
 
 			this.props.history.push("/patients");
-			this.props.add_appointment(appointment, patient.value, "appointment");
+			this.props.add_appointment(
+				appointment,
+				patient.value,
+				this.props.dispatch
+			);
 			this.props.close_book_panel();
 
 			(description.value = ""), (patient.value = "");
+
 			this.setState({
 				start_date: null,
 				end_date: null
