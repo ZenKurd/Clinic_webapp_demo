@@ -36,33 +36,6 @@ export function add_patient(patient, patients) {
 	}
 }
 
-export function add_appointment(appointment, patient) {
-	let patients = this.state.patients.slice(),
-		selected_patient,
-		appointments = [];
-
-	for (let i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient) {
-			selected_patient = patients[i];
-			patients[i].appointments.unshift(appointment);
-		}
-	}
-
-	this.state.patients.map(patient => {
-		patient.appointments.map(apt => {
-			appointments.push(apt);
-		});
-	});
-
-	this.setState({
-		patients: patients,
-		events: appointments,
-		selected_patient: selected_patient
-	});
-
-	setTimeout(() => this.send_post_req(), 2000);
-}
-
 export function add_dropdown_item(item, category) {
 	return {
 		type: "ADD_DROPDOWN_ITEM",
@@ -104,5 +77,15 @@ export function add_item(item, patient, property) {
 	return {
 		type: "ADD_ITEM",
 		payload: { updated_patient: updated_patient }
+	};
+}
+
+export function add_appointment(appointment, patient) {
+	return {
+		type: "ADD_APPOINTMENT",
+		payload: {
+			appointment: appointment,
+			patient_name: patient
+		}
 	};
 }
