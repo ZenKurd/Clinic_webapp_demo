@@ -37,6 +37,12 @@ export function add_patient(patient, patients) {
 }
 
 export function add_dropdown_item(item, category) {
+	// don't add medicine that have no strength added
+	if (category == "medicine_list") {
+		let validate_medicine = item.match(/\d+\s?(ml|mg)$/);
+		if (!validate_medicine) return { type: "NOTHING" };
+	}
+
 	return {
 		type: "ADD_DROPDOWN_ITEM",
 		payload: {

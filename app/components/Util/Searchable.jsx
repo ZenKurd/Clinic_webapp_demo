@@ -13,7 +13,9 @@ class Searchable extends Component {
 			<div id="searchable_container">
 				<input
 					type="text"
-					placeholder={`search/create ${this.props.category}`}
+					placeholder={`search/create ${
+						this.props.category
+					} (require dosage strength e.g. 500mg/ml)`}
 					id="search_item_input"
 					onChange={e => this.search_item(e)}
 					onKeyPress={e => this.add_item(e)}

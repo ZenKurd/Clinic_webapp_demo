@@ -170,7 +170,7 @@ class Medicine extends Component {
 				end: moment(end_date).format("YYYY-MM-DD"),
 				name: selected_medicine_option,
 				dose: selected_medicine_dose_option,
-				strength: selected_medicine_option.match(/\-\s(\w+[\.\d+\w+\s]*)$/)[1],
+				strength: selected_medicine_option.match(/\d+\s?(ml|mg)$/)[1],
 				active: medicine_active
 			};
 
@@ -189,6 +189,7 @@ class Medicine extends Component {
 	}
 
 	set_selected_medicine_option(option) {
+		console.log(option);
 		this.setState({ selected_medicine_option: option });
 	}
 

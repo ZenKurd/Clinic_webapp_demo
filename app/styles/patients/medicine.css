@@ -147,3 +147,11 @@
 	cursor: pointer;
 	background: red;
 }
+
+#medicine_dosage_container input {
+	width: 2rem;
+	outline: none;
+	border: none;
+	display: inline-block;
+	height: 95%;
+}

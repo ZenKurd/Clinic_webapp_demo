@@ -25,16 +25,65 @@ class DropDown extends Component {
 						</div>
 					))}
 
-					<div>
+					{this.props.category == "dose" ? (
+						<div id="medicine_dosage_container">
+							<input
+								type="number"
+								onKeyPress={e => this.create_new_dosage_dropdown_option(e)}
+							/>+
+							<input
+								type="number"
+								onKeyPress={e => this.create_new_dosage_dropdown_option(e)}
+							/>+
+							<input
+								type="number"
+								onKeyPress={e => this.create_new_dosage_dropdown_option(e)}
+							/>+
+							<input
+								type="number"
+								onKeyPress={e => this.create_new_dosage_dropdown_option(e)}
+							/>
+						</div>
+					) : (
 						<strong
 							contentEditable
 							data-text={`New ${this.props.category}`}
 							onKeyPress={e => this.create_new_dropdown_option(e)}
 						/>
-					</div>
+					)}
 				</div>
 			</div>
 		);
+	}
+
+	create_new_dosage_dropdown_option(e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+
+			let inputs = document.querySelectorAll(
+				"#medicine_dosage_container input"
+			);
+			let inputs_validation_counter = 0;
+			let dosage_value = "";
+
+			for (let i = 0; i < inputs.length; i++) {
+				let value = inputs[i].value;
+				let separator = "+";
+
+				if (i == inputs.length - 1) separator = "";
+				if (value) {
+					inputs_validation_counter++;
+					dosage_value += value + separator;
+				}
+			}
+
+			if (inputs_validation_counter == 4) {
+				//add dosage if all inputs are filled in
+
+				this.props.add_dropdown_item(dosage_value, this.props.category_list);
+				Array.from(inputs).map(el => (el.value = ""));
+			}
+		}
 	}
 
 	create_new_dropdown_option(e) {
@@ -49,6 +98,12 @@ class DropDown extends Component {
 	}
 
 	toggle_select_dropdown_option(e) {
+		if (e.target.id == "medicine_dosage_container") {
+			return;
+		}
+		if (e.target.parentNode.id == "medicine_dosage_container") {
+			return;
+		}
 		if (e.target.nodeName === "I") {
 			let parent = e.target.parentNode;
 			return parent.nextSibling.classList.toggle("show");

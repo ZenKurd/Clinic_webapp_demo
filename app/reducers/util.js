@@ -121,7 +121,6 @@ export function find_patient(state, patient_name) {
 }
 
 export function add_dropdown_item(state, item, category) {
-	console.log(state, item, category);
 	let updated_category = state[category].slice(0);
 	updated_category.push(item);
 
