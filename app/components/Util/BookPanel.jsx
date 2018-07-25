@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import moment from "moment";
 import DateTime from "react-datetime";
+import { stat } from "fs";
 
 class BookPanel extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			start_date: null,
-			end_date: null
+			start_date: props.selected_slot.start,
+			end_date: props.selected_slot.end
 		};
 	}
 
@@ -63,13 +64,8 @@ class BookPanel extends Component {
 				"textarea[name=book_appointment_description]"
 			),
 			patient = document.querySelector("select[name=book_patient_select]"),
-			start_date = this.props.selected_slot.start,
-			end_date = this.props.selected_slot.end;
-
-		if (this.state.start_date && this.state.end_date) {
-			start_date = new Date(this.state.start_date);
+			start_date = new Date(this.state.start_date),
 			end_date = new Date(this.state.end_date);
-		}
 
 		if (!patient.value.match(/^\s*$/)) {
 			let appointment = {

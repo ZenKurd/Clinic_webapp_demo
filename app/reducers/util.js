@@ -1,5 +1,3 @@
-import moment from "moment";
-
 export function new_state(state, payload) {
 	return {
 		...state,
