@@ -1,10 +1,9 @@
 import {
 	update_calendar_events,
-	send_post_req,
 	new_state,
 	update_patients,
-	update_patient,
-	move_appointment
+	move_appointment,
+	add_appointment
 } from "./util.js";
 
 const init_state = {};
@@ -13,7 +12,6 @@ export default (state = init_state, action) => {
 	switch (action.type) {
 		case "INIT_STATE": {
 			const { data, lab_data } = action.payload;
-
 			return {
 				...state,
 				username: data.username,
@@ -40,22 +38,7 @@ export default (state = init_state, action) => {
 			return update_patients(state, action.payload.updated_patient, true);
 		case "ADD_APPOINTMENT":
 			let { patient_name, appointment } = action.payload;
-			let updated_patient = update_patient(
-				state,
-				patient_name,
-				"appointment",
-				appointment
-			);
-
-			let updated_patients = update_patients(state, updated_patient, false);
-			let updated_events = update_calendar_events(updated_patients);
-
-			return {
-				...state,
-				patients: updated_patients,
-				events: updated_events
-			};
-
+			return add_appointment(state, patient_name, appointment);
 		case "MOVE_APPOINTMENT":
 			let { moved_appointment, event } = action.payload;
 			return move_appointment(state, moved_appointment, event);

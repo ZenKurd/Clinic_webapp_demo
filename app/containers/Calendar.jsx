@@ -14,7 +14,7 @@ import {
 	move_appointment
 } from "../methods";
 
-BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
+BigCalendar.momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(BigCalendar);
 
 class Appointments extends Component {

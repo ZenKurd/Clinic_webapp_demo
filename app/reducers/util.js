@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export function new_state(state, payload) {
 	return {
 		...state,
@@ -65,10 +67,40 @@ export function update_patient(state, patient_name, type, data) {
 	}
 }
 
-export function move_appointment(state, appointment, event) {
-	console.log(appointment, event);
+export function add_appointment(state, patient_name, appointment) {
+	let updated_patient = update_patient(
+		state,
+		patient_name,
+		"appointment",
+		appointment
+	);
+
+	let updated_patients = update_patients(state, updated_patient, false);
+	let updated_events = update_calendar_events(updated_patients);
 
 	return {
-		...state
+		...state,
+		patients: updated_patients,
+		events: updated_events
+	};
+}
+
+export function move_appointment(state, appointment, event) {
+	let patients = state.patients.slice(0);
+	let patient_index = patients
+		.map(patient => patient.name)
+		.indexOf(event.title);
+
+	let patient = patients[patient_index];
+	let apt_index = patient.appointments
+		.map(apt => new Date(apt.start).getTime())
+		.indexOf(new Date(event.start).getTime());
+
+	patient.appointments.splice(apt_index, 1, appointment);
+
+	return {
+		...state,
+		patients,
+		events: update_calendar_events(patients)
 	};
 }

@@ -1,6 +1,5 @@
-let moment = require("moment");
-let today = moment().format("MMMM DD, YYYY");
-
+let moment = require("moment-timezone");
+let today = moment().format("YYYY-MM-DD");
 let data = {
 	username: "demo",
 	_id: 1,
@@ -262,14 +261,14 @@ let data = {
 			appointments: [
 				{
 					title: "Johnny",
-					start: new Date(`${today} 11:13:00`),
-					end: new Date(`${today} 12:13:00`),
+					start: new Date(`${today}T11:13:00`),
+					end: new Date(`${today}T12:13:00`),
 					desc: "someone"
 				},
 				{
 					title: "Johnny",
-					start: new Date(`${today} 13:13:00`),
-					end: new Date(`${today} 14:13:00`),
+					start: new Date(`${today}T13:13:00`),
+					end: new Date(`${today}T14:13:00`),
 					desc: "someone"
 				}
 			]
@@ -450,14 +449,14 @@ let data = {
 			appointments: [
 				{
 					title: "Max",
-					start: new Date(`${today} 15:13:00`),
-					end: new Date(`${today} 16:13:00`),
+					start: new Date(`${today}T15:13:00`),
+					end: new Date(`${today}T16:13:00`),
 					desc: "  someone"
 				},
 				{
 					title: "Max",
-					start: new Date(`${today} 08:13:00`),
-					end: new Date(`${today} 09:13:00`),
+					start: new Date(`${today}T08:13:00`),
+					end: new Date(`${today}T09:13:00`),
 					desc: "  someone"
 				}
 			]
@@ -635,20 +634,7 @@ let data = {
 					oxygen: "6   "
 				}
 			],
-			appointments: [
-				{
-					title: "Tyler",
-					start: new Date(`${today} 11:13:00`),
-					end: new Date(`${today} 11:33:00`),
-					desc: "  someone"
-				},
-				{
-					title: "Tyler",
-					start: new Date(`${today} 09:13:00`),
-					end: new Date(`${today} 10:05:00`),
-					desc: "  someone"
-				}
-			]
+			appointments: []
 		},
 		{
 			name: "Julien",
@@ -823,20 +809,7 @@ let data = {
 					oxygen: "6   "
 				}
 			],
-			appointments: [
-				{
-					title: "Julien",
-					start: new Date(`${today} 17:13:00`),
-					end: new Date(`${today} 18:13:00`),
-					desc: "  someone"
-				},
-				{
-					title: "Julien",
-					start: new Date(`${today} 14:13:00`),
-					end: new Date(`${today} 14:40:00`),
-					desc: "  someone"
-				}
-			]
+			appointments: []
 		},
 		{
 			name: "Lolzie",
@@ -1075,20 +1048,7 @@ let data = {
 					treatment: "some treatment for hypertension"
 				}
 			],
-			appointments: [
-				{
-					title: "Lolzie",
-					start: new Date("September 10, 2017 11:13:00"),
-					end: new Date("September 10, 2017 12:13:00"),
-					desc: "  someone"
-				},
-				{
-					title: "Lolzie",
-					start: new Date("September 09, 2017 07:13:00"),
-					end: new Date("September 09, 2017 08:13:00"),
-					desc: "  someone"
-				}
-			]
+			appointments: []
 		},
 		{
 			name: "Bane",
@@ -1327,20 +1287,7 @@ let data = {
 					treatment: "some treatment for hypertension"
 				}
 			],
-			appointments: [
-				{
-					title: "Bane",
-					start: new Date("September 11, 2017 11:13:00"),
-					end: new Date("September 11, 2017 12:13:00"),
-					desc: "  someone"
-				},
-				{
-					title: "Bane",
-					start: new Date("September 12, 2017 11:13:00"),
-					end: new Date("September 12, 2017 12:13:00"),
-					desc: "  someone"
-				}
-			]
+			appointments: []
 		},
 		{
 			name: "Batman",
@@ -1579,20 +1526,7 @@ let data = {
 					treatment: "some treatment for hypertension"
 				}
 			],
-			appointments: [
-				{
-					title: "Batman",
-					start: new Date("September 13, 2017 11:13:00"),
-					end: new Date("September 13, 2017 12:13:00"),
-					desc: "someone"
-				},
-				{
-					title: "Batman",
-					start: new Date("September 14, 2017 11:13:00"),
-					end: new Date("September 14, 2017 12:13:00"),
-					desc: "someone"
-				}
-			]
+			appointments: []
 		},
 		{
 			name: "Luke",
@@ -1843,14 +1777,14 @@ let data = {
 			appointments: [
 				{
 					title: "Luke",
-					start: new Date("September 12, 2017 14:13:00"),
-					end: new Date("September 12, 2017 15:13:00"),
+					start: new Date(`${today}T14:13:00`),
+					end: new Date(`${today}T16:13:00`),
 					desc: "  someone"
 				},
 				{
 					title: "Luke",
-					start: new Date("September 13, 2017 08:13:00"),
-					end: new Date("September 13, 2017 09:13:00"),
+					start: new Date(`${today}T09:30:00`),
+					end: new Date(`${today}T10:05:00`),
 					desc: "  someone"
 				}
 			]
