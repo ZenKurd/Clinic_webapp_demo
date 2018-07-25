@@ -31,43 +31,44 @@ export default class PatientsList extends Component {
 							<i className="fa fa-window-close-o" aria-hidden="true" />
 						</a>
 					</div>
-
-					<a
-						className="patient_tab"
-						onClick={e => this.set_active_tab("info", e.target)}
-					>
-						Info
-					</a>
-					<a
-						className="patient_tab"
-						onClick={e => this.set_active_tab("notes", e.target)}
-					>
-						Notes
-					</a>
-					<a
-						className="patient_tab"
-						onClick={e => this.set_active_tab("vitals", e.target)}
-					>
-						Vitals
-					</a>
-					<a
-						className="patient_tab"
-						onClick={e => this.set_active_tab("lab", e.target)}
-					>
-						Lab
-					</a>
-					<a
-						className="patient_tab"
-						onClick={e => this.set_active_tab("medicine", e.target)}
-					>
-						Medicine
-					</a>
-					<a
-						className="patient_tab"
-						onClick={e => this.set_active_tab("appointments", e.target)}
-					>
-						Appointments
-					</a>
+					<div id="patient_tabs">
+						<a
+							className="patient_tab"
+							onClick={e => this.set_active_tab("info", e.target)}
+						>
+							Info
+						</a>
+						<a
+							className="patient_tab"
+							onClick={e => this.set_active_tab("notes", e.target)}
+						>
+							Notes
+						</a>
+						<a
+							className="patient_tab"
+							onClick={e => this.set_active_tab("vitals", e.target)}
+						>
+							Vitals
+						</a>
+						<a
+							className="patient_tab"
+							onClick={e => this.set_active_tab("lab", e.target)}
+						>
+							Lab
+						</a>
+						<a
+							className="patient_tab"
+							onClick={e => this.set_active_tab("medicine", e.target)}
+						>
+							Medicine
+						</a>
+						<a
+							className="patient_tab"
+							onClick={e => this.set_active_tab("appointments", e.target)}
+						>
+							Appointments
+						</a>
+					</div>
 				</div>
 				{this.show_route(this.props)}
 			</div>
