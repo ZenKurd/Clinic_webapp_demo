@@ -1,4 +1,15 @@
-export function new_state(state, payload) {
+import axios from "axios";
+let demo;
+
+export function set_demo(username) {
+	if (username == "demo") return (demo = true);
+	return (demo = false);
+}
+
+export function new_state(state, payload, flag) {
+	//send data to server if flag is true
+	if (flag) send_post_req({ ...payload, type: "patients" });
+
 	return {
 		...state,
 		...payload
@@ -21,14 +32,6 @@ export function update_calendar_events(patients) {
 	return appointments;
 }
 
-export function send_post_req(demo) {
-	if (!demo) {
-		axios.post(`/insert`, { data: this.state }).then(res => {
-			console.log("data inserted");
-		});
-	}
-}
-
 export function update_patients(state, updated_patient, flag) {
 	//if flag is set to true, return state, else return updated patients only
 	let patient_index = state.patients
@@ -39,6 +42,8 @@ export function update_patients(state, updated_patient, flag) {
 
 	let updated_patients = state.patients.slice();
 	update_patients[patient_index] = updated_patient;
+
+	send_post_req({ patients: updated_patients, type: "patients" });
 
 	if (flag) {
 		return {
@@ -97,6 +102,8 @@ export function move_appointment(state, appointment, event) {
 
 	patient.appointments.splice(apt_index, 1, appointment);
 
+	send_post_req({ patients: patients, type: "patients" });
+
 	return {
 		...state,
 		patients,
@@ -120,8 +127,18 @@ export function add_dropdown_item(state, item, category) {
 	let obj = {};
 	obj[category] = updated_category;
 
+	send_post_req({ ...obj, type: "item" });
+
 	return {
 		...state,
 		...obj
 	};
+}
+
+export function send_post_req(data) {
+	if (!demo) {
+		axios.post(`/insert`, data).then(res => {
+			console.log("data inserted");
+		});
+	}
 }

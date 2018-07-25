@@ -40,15 +40,17 @@ router.get("/demo", (req, res) => {
 });
 
 router.post("/insert", (req, res) => {
+	const type = req.body.type;
 	User.findById(req.session.userId, (err, user) => {
-		if (err) {
-			throw err;
-		}
 		if (user) {
-			user.patients = req.body.patients;
-			user.diagnosis_list = req.body.diagnosis_list;
-			user.medicine_dose_list = req.body.medicine_dose_list;
-			user.medicine_list = req.body.medicine_list;
+			if (type == "patients") {
+				user.patients = req.body.patients;
+			}
+
+			if (type == "item") {
+				let category = Object.keys(req.body)[0];
+				user[category] = req.body[category];
+			}
 
 			user.save(err => {
 				if (err) throw err;

@@ -5,7 +5,8 @@ import {
 	move_appointment,
 	add_appointment,
 	find_patient,
-	add_dropdown_item
+	add_dropdown_item,
+	set_demo
 } from "./util.js";
 
 const init_state = {};
@@ -14,6 +15,7 @@ export default (state = init_state, action) => {
 	switch (action.type) {
 		case "INIT_STATE": {
 			const { data, lab_data } = action.payload;
+			set_demo(data.username);
 			return {
 				...state,
 				username: data.username,
@@ -35,7 +37,7 @@ export default (state = init_state, action) => {
 		}
 
 		case "ADD_PATIENT":
-			return new_state(state, action.payload);
+			return new_state(state, action.payload, true);
 		case "SELECTED_PATIENT":
 			return new_state(state, action.payload);
 		case "STOP_MEDICINE":
