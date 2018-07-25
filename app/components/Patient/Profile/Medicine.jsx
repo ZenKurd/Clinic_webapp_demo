@@ -28,6 +28,7 @@ class Medicine extends Component {
 									set_selected_option={this.set_selected_medicine_option.bind(
 										this
 									)}
+									add_dropdown_item={this.props.add_dropdown_item}
 									category="medicine"
 								/>
 							</div>
