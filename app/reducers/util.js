@@ -58,6 +58,7 @@ export function update_patient(state, patient_name, type, data) {
 			return x.name;
 		})
 		.indexOf(patient_name);
+
 	let cloned_patients_list = state.patients.slice();
 	let patient = cloned_patients_list[patient_index];
 
@@ -103,4 +104,13 @@ export function move_appointment(state, appointment, event) {
 		patients,
 		events: update_calendar_events(patients)
 	};
+}
+
+export function find_patient(state, patient_name) {
+	let patient_index = state.patients.map(x => x.name).indexOf(patient_name);
+
+	let cloned_patients_list = state.patients.slice();
+	let patient = cloned_patients_list[patient_index];
+
+	return patient;
 }

@@ -3,7 +3,8 @@ import {
 	new_state,
 	update_patients,
 	move_appointment,
-	add_appointment
+	add_appointment,
+	find_patient
 } from "./util.js";
 
 const init_state = {};
@@ -42,7 +43,14 @@ export default (state = init_state, action) => {
 		case "MOVE_APPOINTMENT":
 			let { moved_appointment, event } = action.payload;
 			return move_appointment(state, moved_appointment, event);
-
+		case "NAVIGATE_TO_PATIENT_PROFILE": {
+			let { patient_name } = action.payload;
+			let patient = find_patient(state, patient_name);
+			return {
+				...state,
+				selected_patient: patient
+			};
+		}
 		default:
 			return state;
 	}

@@ -6,7 +6,7 @@ export {
 	darken,
 	add_appointment,
 	move_appointment,
-	navigate
+	navigate_to_patient_profile
 };
 
 function darken() {
@@ -35,17 +35,13 @@ function logout() {
 	});
 }
 
-function navigate(patient) {
-	let selected_patient,
-		patients = this.state.patients;
-
-	for (let i = 0; i < patients.length; i++) {
-		if (patients[i].name === patient) {
-			selected_patient = patients[i];
+function navigate_to_patient_profile(patient_name, dispatch) {
+	dispatch({
+		type: "NAVIGATE_TO_PATIENT_PROFILE",
+		payload: {
+			patient_name
 		}
-	}
-
-	this.setState({ selected_patient: [selected_patient] });
+	});
 }
 
 function move_appointment(event, start, end, dispatch) {

@@ -10,7 +10,7 @@ import { connect } from "react-redux";
 import {
 	darken,
 	add_appointment,
-	navigate,
+	navigate_to_patient_profile,
 	move_appointment
 } from "../methods";
 
@@ -52,7 +52,7 @@ class Appointments extends Component {
 					timeslots={2}
 					min={this.get_min_time()}
 					defaultView="week"
-					onSelectEvent={event => this.navigate_to_patient(event)}
+					onSelectEvent={event => this.navigate_to_patient(event, dispatch)}
 					onSelectSlot={slot_info => this.book_slot(slot_info)}
 					formats={{
 						eventTimeRangeFormat: function() {
@@ -67,9 +67,9 @@ class Appointments extends Component {
 		move_appointment(event, start, end, this.props.dispatch);
 	}
 
-	navigate_to_patient(event) {
+	navigate_to_patient(event, dispatch) {
 		this.props.history.push("/patients");
-		navigate(event.title);
+		navigate_to_patient_profile(event.title, dispatch);
 	}
 
 	book_slot(slot_info) {

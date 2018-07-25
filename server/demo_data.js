@@ -1,4 +1,4 @@
-let moment = require("moment-timezone");
+let moment = require("moment");
 let today = moment().format("YYYY-MM-DD");
 let data = {
 	username: "demo",
